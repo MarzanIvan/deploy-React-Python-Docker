@@ -19,6 +19,9 @@ services:
       context: ./backend
     networks:
       - dev
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
 
   frontend:
       build:
