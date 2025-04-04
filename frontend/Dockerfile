@@ -1,6 +1,9 @@
 FROM node:alpine as build
 
 COPY package.json package.json
+RUN rm -rf ~/node_modules
+RUN npm install typescript@latest --save-dev
+RUN rm -rf node_modules package-lock.json
 RUN npm install
 COPY . .
 RUN npm run build
