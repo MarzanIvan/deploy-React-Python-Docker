@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # Указываем путь к FFmpeg
-FFMPEG_PATH = r"./ffmpeg/ffmpeg/bin/ffprobe.exe"
+FFMPEG_PATH = r"/usr/bin/ffmpeg"
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
 
 # Проверка наличия FFmpeg
@@ -26,9 +26,6 @@ if not os.path.isfile(FFMPEG_PATH):
 # Папка загрузок
 DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-
-# Путь к обходному скрипту блокировки
-ZAPRET_SCRIPT_PATH = r"./zapret-discord-youtube-main/general.bat"
 
 # Создаём FastAPI приложение
 app = FastAPI()
@@ -116,7 +113,6 @@ async def download_video(
 
         try:
             update_yt_dlp()
-            subprocess.run([ZAPRET_SCRIPT_PATH], shell=True)
 
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
