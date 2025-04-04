@@ -3,5 +3,5 @@ backend/zapret-discord-youtube-main/
 .DS_Store
 frontend/.idea/
 frontend/node_modules/
-backend/env/
 backend/ffmpeg/
+venv/
