@@ -1,0 +1,7 @@
+node_modules/
+.git/
+.idea/
+.venv/
+*.log
+*.bak
+.DS_Store

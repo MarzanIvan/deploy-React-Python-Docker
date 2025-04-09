@@ -1,0 +1,10 @@
+.DS_Store
+.git/
+.idea/
+.venv/
+*.png
+*.jpg
+build/
+node_modules/
+*.log
+*.bak
