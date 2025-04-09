@@ -1,11 +1,6 @@
-version: '3.8'
-
 networks:
   dev:
-    # Uncomment below if you need to adjust driver options
-    driver: bridge
-    driver_opts:
-      com.docker.network.driver.mtu: 1450
+    
 
 services:
   nginx:
