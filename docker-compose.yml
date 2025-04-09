@@ -8,11 +8,11 @@ services:
       - "80:80"
     volumes:
       - './nginx.conf:/etc/nginx/nginx.conf'
-  depends_on:
-    - backend
-    - frontend
-  networks:
-    - dev
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - dev
 
   backend:
     build:
@@ -24,7 +24,7 @@ services:
       - 1.1.1.1
 
   frontend:
-      build:
-        context: ./frontend
-      networks:
-          - dev
+    build:
+      context: ./frontend
+    networks:
+      - dev
