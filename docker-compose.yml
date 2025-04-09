@@ -3,7 +3,7 @@ networks:
   driver: bridge
   driver_opts:
       com.docker.network.driver.mtu: 1450
-      
+
 services:
   nginx:
     image: nginx:stable-alpine
@@ -25,6 +25,8 @@ services:
     dns:
        - 8.8.8.8
        - 1.1.1.1
+    volumes:
+      - /usr/bin/ffmpeg:/usr/bin/ffmpeg
 
   frontend:
     build:
