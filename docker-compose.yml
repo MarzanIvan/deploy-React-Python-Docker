@@ -1,10 +1,9 @@
 
 networks:
-  default:
-    driver: bridge
-    driver_opts:
-      com.docker.network.driver.mtu: 1450
   dev:
+    ##driver: bridge
+    ##driver_opts:
+      ##com.docker.network.driver.mtu: 1450
 
 services:
   nginx:
@@ -24,9 +23,6 @@ services:
       context: ./backend
     networks:
       - dev
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
 
   frontend:
     build:
