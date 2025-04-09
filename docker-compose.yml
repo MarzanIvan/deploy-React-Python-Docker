@@ -27,6 +27,11 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    environment:
+      - http_proxy=socks5h://127.0.0.1:987
+      - https_proxy=socks5h://127.0.0.1:987
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
     build:
