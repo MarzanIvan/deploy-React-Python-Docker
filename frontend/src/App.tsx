@@ -176,7 +176,7 @@ const App = () => {
 	const fetchVideoInfo = async () => {
 		try {
 			const response = await axios.post(
-				'/get_video_info/',
+				'/api/get_video_info/',
 				new URLSearchParams({ url })
 			)
 			const data = response.data
@@ -198,7 +198,7 @@ const App = () => {
 			setLoading(true)
 			setCompleted(false)
 			await axios.post(
-				'/download_video/',
+				'/api/download_video/',
 				new URLSearchParams({
 					url,
 					video_format_id: videoFormatId,
@@ -211,7 +211,7 @@ const App = () => {
 			toast.info('Please wait while your video is being downloaded.')
 
 			// Подключаемся к WebSocket для получения обновлений прогресса
-			const socket = new WebSocket('ws:///ws/progress/')
+			const socket = new WebSocket('ws:///api/ws/progress/')
 
 			socket.onmessage = function (event) {
 				const data = JSON.parse(event.data)

@@ -17,7 +17,7 @@ const OnlineCounter: React.FC = () => {
 			try {
 				// Проверим, сохранен ли ранее идентификатор пользователя
 				const response = await axios.post(
-					`/counter/user_join/${userIdRef.current}`
+					`/api/counter/user_join/${userIdRef.current}`
 				)
 				setOnlineUsers(response.data.onlineUsers)
 				setTotalVisits(response.data.totalVisits)
@@ -29,7 +29,7 @@ const OnlineCounter: React.FC = () => {
 		const leaveUser = async () => {
 			try {
 				await axios.post(
-					`/counter/user_leave/${userIdRef.current}`
+					`/api/counter/user_leave/${userIdRef.current}`
 				)
 			} catch (error) {
 				console.error('Error leaving user:', error)
@@ -47,7 +47,7 @@ const OnlineCounter: React.FC = () => {
 	useEffect(() => {
 		const fetchVisits = async () => {
 			try {
-				const response = await axios.get('/counter/visits')
+				const response = await axios.get('/api/counter/visits')
 				setTotalVisits(response.data.totalVisits)
 			} catch (error) {
 				console.error('Error fetching visits:', error)
