@@ -31,3 +31,5 @@ services:
       context: ./frontend
     networks:
       - dev
+    volumes:
+      - /etc/letsencrypt/live/videovault.ru:/certs:ro
