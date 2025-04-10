@@ -10,6 +10,7 @@ services:
     volumes:
       - ./certs:/etc/ssl/certs  # Монтируем локальную папку с сертификатами
       - './nginx.conf:/etc/nginx/nginx.conf'
+      - /etc/letsencrypt/:/etc/letsencrypt/
     depends_on:
       - backend
       - frontend
@@ -33,3 +34,4 @@ services:
     volumes:
       - /etc/letsencrypt/live/videovault.ru:/certs:ro  # Монтируем сертификаты с хоста в контейнер
       - ./certs:/etc/ssl/certs  # Монтируем локальную папку с сертификатами
+      - /etc/letsencrypt/live/videovault.ru/:/etc/letsencrypt/live/videovault.ru/

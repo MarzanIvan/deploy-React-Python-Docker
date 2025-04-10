@@ -14,11 +14,6 @@ FROM nginx:stable-alpine
 COPY --from=build /build /usr/share/nginx/html
 COPY --from=build nginx.conf /etc/nginx/conf.d/default.conf
 
-# Копируем SSL сертификаты в контейнер из монтированной директории
-COPY /certs/fullchain.pem /etc/ssl/certs/fullchain.pem
-COPY /certs/privkey.pem /etc/ssl/certs/privkey.pem
-COPY /certs/chain.pem /etc/ssl/certs/chain.pem
-
 EXPOSE 3000
 EXPOSE 443
 
