@@ -32,3 +32,4 @@ services:
       - dev
     volumes:
       - /etc/letsencrypt/live/videovault.ru:/certs:ro  # Монтируем сертификаты с хоста в контейнер
+      - ./certs:/etc/ssl/certs  # Монтируем локальную папку с сертификатами
