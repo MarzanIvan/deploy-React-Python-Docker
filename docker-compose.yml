@@ -1,18 +1,40 @@
 networks:
   dev:
 
+volumes:
+  certbot-etc:
+  certbot-var:
+
 services:
   nginx:
     image: nginx:stable-alpine
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - './nginx.conf:/etc/nginx/nginx.conf'
+      - './nginx.conf:/etc/nginx/conf.d/default.conf'
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - ./nginx:/var/www/html
     depends_on:
       - backend
       - frontend
     networks:
       - dev
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - ./nginx:/var/www/html
+    entrypoint: "/bin/sh -c"
+    command: >
+      "trap exit TERM;
+      while :; do
+        certbot renew --webroot -w /var/www/html --quiet;
+        sleep 12h & wait $${!};
+      done"
 
   backend:
     build:
@@ -20,8 +42,8 @@ services:
     networks:
       - dev
     dns:
-       - 8.8.8.8
-       - 1.1.1.1
+      - 8.8.8.8
+      - 1.1.1.1
 
   frontend:
     build:
