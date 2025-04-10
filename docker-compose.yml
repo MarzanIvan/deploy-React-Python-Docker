@@ -8,6 +8,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - /etc/letsencrypt/live/videovault.ru:/etc/letsencrypt/live/videovault.ru
       - './nginx.conf:/etc/nginx/conf.d/default.conf'
       - ./nginx:/var/www/html
     depends_on:
