@@ -9,10 +9,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-    
-RUN pip install python-multipart
 
+RUN pip install python-multipart
+RUN pip install uvicorn[standard]
 
 COPY . .
 
-CMD [ "python", "main.py"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
