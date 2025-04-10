@@ -74,7 +74,7 @@ def get_video_info(url: str):
         logger.error(f"Error fetching video info: {e}")
         return None
 
-@app.post("/api/get_video_info/")
+@app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
     video_info = get_video_info(url)
     if (video_info):
