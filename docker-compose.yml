@@ -8,7 +8,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./certs:/etc/ssl/certs   # Монтируем сертификаты из локальной папки
+      - ./certs:/etc/ssl/certs  # Монтируем локальную папку с сертификатами
       - './nginx.conf:/etc/nginx/conf.d/default.conf'
       - ./nginx:/var/www/html
     depends_on:
@@ -32,4 +32,4 @@ services:
     networks:
       - dev
     volumes:
-      - /etc/letsencrypt/live/videovault.ru:/certs:ro
+      - /etc/letsencrypt/live/videovault.ru:/certs:ro  # Монтируем сертификаты с хоста в контейнер
