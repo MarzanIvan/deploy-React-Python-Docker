@@ -9,8 +9,7 @@ services:
       - "443:443"
     volumes:
       - ./certs:/etc/ssl/certs  # Монтируем локальную папку с сертификатами
-      - './nginx.conf:/etc/nginx/conf.d/default.conf'
-      - ./nginx:/var/www/html
+      - './nginx.conf:/etc/nginx/nginx.conf'
     depends_on:
       - backend
       - frontend
