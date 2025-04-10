@@ -14,9 +14,9 @@ FROM nginx:stable-alpine
 COPY --from=build /build /usr/share/nginx/html
 COPY --from=build nginx.conf /etc/nginx/conf.d/default.conf
 # Копируем SSL сертификаты в контейнер
-COPY --from=etc/letsencrypt/live/videovault.ru fullchain.pem /etc/ssl/certs/fullchain.pem
-COPY --from=etc/letsencrypt/live/videovault.ru privkey.pem /etc/ssl/certs/privkey.pem
-COPY --from=etc/letsencrypt/live/videovault.ru chain.pem /etc/ssl/certs/chain.pem
-
+COPY /etc/letsencrypt/live/videovault.ru/fullchain.pem /etc/ssl/certs/fullchain.pem
+COPY /etc/letsencrypt/live/videovault.ru/privkey.pem /etc/ssl/certs/privkey.pem
+COPY /etc/letsencrypt/live/videovault.ru/chain.pem /etc/ssl/certs/chain.pem
 EXPOSE 3000
+EXPOSE 443
 CMD [ "nginx", "-g", "daemon off;"]
