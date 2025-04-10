@@ -17,7 +17,7 @@ const OnlineCounter: React.FC = () => {
 			try {
 				// Проверим, сохранен ли ранее идентификатор пользователя
 				const response = await axios.post(
-					`https://videovault.ru:8000/counter/user_join/${userIdRef.current}`
+					`http://87.228.78.15:80/counter/user_join/${userIdRef.current}`
 				)
 				setOnlineUsers(response.data.onlineUsers)
 				setTotalVisits(response.data.totalVisits)
@@ -29,7 +29,7 @@ const OnlineCounter: React.FC = () => {
 		const leaveUser = async () => {
 			try {
 				await axios.post(
-					`https://videovault.ru:8000/counter/user_leave/${userIdRef.current}`
+					`http://87.228.78.15:80/counter/user_leave/${userIdRef.current}`
 				)
 			} catch (error) {
 				console.error('Error leaving user:', error)
@@ -47,7 +47,7 @@ const OnlineCounter: React.FC = () => {
 	useEffect(() => {
 		const fetchVisits = async () => {
 			try {
-				const response = await axios.get('https://videovault.ru:8000/counter/visits')
+				const response = await axios.get('http://87.228.78.15:80/counter/visits')
 				setTotalVisits(response.data.totalVisits)
 			} catch (error) {
 				console.error('Error fetching visits:', error)
