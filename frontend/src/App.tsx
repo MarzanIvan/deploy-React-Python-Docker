@@ -8,6 +8,7 @@ import LanguageSwitcher from './components/languageSwitcher/LanguageSwitcher'
 import OnlineCounter from './components/OnlineCounter/OnlineCounter'
 import VideoPlayerInstructions from './components/VideoPlayerInstructions/VideoPlayerInstructions'
 import './index.css'
+import vvlogo from './logo.svg'
 
 interface Translations {
 	title: string
@@ -253,7 +254,7 @@ const App = () => {
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
-						<h1 className='logo'>VideoVault</h1>
+						<img src={vvlogo} width="32" height="32" alt="logotype"/>
 					</div>
 					<button
 						id='menu-button'
