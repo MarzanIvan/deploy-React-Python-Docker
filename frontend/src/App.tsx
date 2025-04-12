@@ -254,7 +254,7 @@ const App = () => {
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
-						<img src={vvlogo} width="32" height="32" alt="logotype"/>
+						<img src={vvlogo} width="64" height="64" alt="logotype"/>
 					</div>
 					<button
 						id='menu-button'
