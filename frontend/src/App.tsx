@@ -1,14 +1,17 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { AiOutlineClose } from 'react-icons/ai'
-import { BsMoonFill } from 'react-icons/bs'
-import { MdSunny } from 'react-icons/md'
-import { ToastContainer, toast } from 'react-toastify'
+import {useEffect, useState} from 'react'
+import {AiOutlineClose} from 'react-icons/ai'
+import {BsMoonFill} from 'react-icons/bs'
+import {MdSunny} from 'react-icons/md'
+import {ToastContainer, toast} from 'react-toastify'
 import LanguageSwitcher from './components/languageSwitcher/LanguageSwitcher'
 import OnlineCounter from './components/OnlineCounter/OnlineCounter'
 import VideoPlayerInstructions from './components/VideoPlayerInstructions/VideoPlayerInstructions'
 import './index.css'
 import vvlogo from './logo.svg'
+import logoWhite from './logo-white.svg'
+import logoBlack from './logo-black.svg'
+
 
 interface Translations {
 	title: string
@@ -178,7 +181,7 @@ const App = () => {
 		try {
 			const response = await axios.post(
 				'/api/get_video_info/',
-				new URLSearchParams({ url })
+				new URLSearchParams({url})
 			)
 			const data = response.data
 
@@ -254,7 +257,7 @@ const App = () => {
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
-						<img src={vvlogo} width="64" height="64" alt="logotype"/>
+						<img src={isDarkMode ? logoWhite : logoBlack} width="64" height="64" alt="logotype"/>
 					</div>
 					<button
 						id='menu-button'
@@ -264,7 +267,7 @@ const App = () => {
 						onClick={toggleMenu}
 					>
 						{isMenuOpen ? (
-							<AiOutlineClose />
+							<AiOutlineClose/>
 						) : (
 							<span className='menu-icon'></span>
 						)}
@@ -298,14 +301,14 @@ const App = () => {
 										className='theme-button'
 										onClick={toggleTheme}
 									>
-										{isDarkMode ? <BsMoonFill /> : <MdSunny />}
+										{isDarkMode ? <BsMoonFill/> : <MdSunny/>}
 									</button>
 								</div>
 								<LanguageSwitcher
 									currentLanguage={language}
 									onLanguageChange={handleLanguageChange}
 								/>
-								<OnlineCounter />
+								<OnlineCounter/>
 							</div>
 						</ul>
 					</nav>
@@ -380,7 +383,7 @@ const App = () => {
 						<div className='progress-container'>
 							<div
 								className='progress-bar'
-								style={{ width: `${progress}%` }}
+								style={{width: `${progress}%`}}
 							></div>
 							<p>{message}</p>
 						</div>
@@ -391,7 +394,7 @@ const App = () => {
 						</div>
 					)}
 
-					<ToastContainer />
+					<ToastContainer/>
 
 					<button
 						className='primary-button'
@@ -402,7 +405,7 @@ const App = () => {
 				</div>
 
 				<section id='instructions'>
-					<VideoPlayerInstructions language={language} />
+					<VideoPlayerInstructions language={language}/>
 				</section>
 				<section id='features' className='features'>
 					<div className='container'>
@@ -431,7 +434,7 @@ const App = () => {
 								helpvideovault@gmail.com
 							</a>
 						</p>
-						<br />
+						<br/>
 						<p>
 							{t.contactText}
 							<a
