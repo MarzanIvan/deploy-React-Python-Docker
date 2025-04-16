@@ -57,7 +57,10 @@ def update_yt_dlp():
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        ydl_opts = {"quiet": True}
+        ydl_opts = {    
+            "quiet": True,
+            "cookies": "cookies.txt"
+        }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = [{
