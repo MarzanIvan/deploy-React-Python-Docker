@@ -59,7 +59,8 @@ def get_video_info(url: str):
     try:
         ydl_opts = {    
             "quiet": True,
-            "cookies": "cookies.txt"
+            "cookies": "/cookies.txt",
+            "cookies-from-browser": "chrome"
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
