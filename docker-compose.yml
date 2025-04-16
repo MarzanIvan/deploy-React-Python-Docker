@@ -20,6 +20,8 @@ services:
   backend:
     build:
       context: ./backend
+    volumes:
+      - ./cookies.txt:/app/cookies.txt
     networks:
       - dev
     dns:
