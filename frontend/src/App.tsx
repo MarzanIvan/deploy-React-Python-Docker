@@ -257,7 +257,7 @@ const App = () => {
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
-						<img src={isDarkMode ? logoWhite : logoBlack} width="64" height="64" alt="logotype"/>
+						<img src={isDarkMode ? logoBlack  : logoWhite} width="64" height="64" alt="logotype"/>
 					</div>
 					<button
 						id='menu-button'
