@@ -10,6 +10,8 @@ from datetime import datetime
 # Импортируем компонент счётчика
 from counter import counter_app
 
+from app.auth import login_and_save_cookies
+
 # Настройка логирования
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -59,8 +61,7 @@ def get_video_info(url: str):
     try:
         ydl_opts = {
             "quiet": True,
-            'cookies': './app/cookies.txt/cookies.txt',
-            'cookiefile': './app/cookies.txt/cookies.txt'
+            "cookiefile": "./app/cookies.txt/cookies.txt", 
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -95,6 +96,13 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
 
+@app.post("/auth/")
+async def auth_youtube(email: str = Form(...), password: str = Form(...)):
+    success = login_and_save_cookies(email, password)
+    if success:
+        return {"message": "Авторизация прошла успешно и куки сохранены."}
+    raise HTTPException(status_code=401, detail="Не удалось авторизоваться.")
+
 @app.post("/download_video/")
 async def download_video(
     background_tasks: BackgroundTasks,
@@ -122,14 +130,16 @@ async def download_video(
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH
+                "ffmpeg_location": FFMPEG_PATH,
+                "cookiefile": "./app/cookies.txt/cookies.txt"  # 👈 Добавь
             }
 
             audio_opts = {
                 "format": "bestaudio",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH
+                "ffmpeg_location": FFMPEG_PATH,
+                "cookiefile": "./app/cookies.txt/cookies.txt"  # 👈 Добавь
             }
 
             video_file, audio_file = None, None
