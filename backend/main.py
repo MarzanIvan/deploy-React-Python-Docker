@@ -10,8 +10,6 @@ from datetime import datetime
 # Импортируем компонент счётчика
 from counter import counter_app
 
-COOKIES_PATH = "./app/cookies.txt/cookies.txt"
-
 # Настройка логирования
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -59,10 +57,7 @@ def update_yt_dlp():
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        ydl_opts = {
-            "quiet": True,
-            "cookiefile": "./app/cookies.txt/cookies.txt", 
-        }
+        ydl_opts = {"quiet": True}
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = [{
@@ -76,8 +71,8 @@ def get_video_info(url: str):
             
             return {"title": info["title"], "formats": formats}
     except Exception as e:
-         logger.error(f"Error fetching video info: {e}")
-         return None
+        logger.error(f"Error fetching video info: {e}")
+        return None
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
@@ -95,7 +90,6 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.sleep(1)  # Частота обновления прогресса
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
-
 
 @app.post("/download_video/")
 async def download_video(
@@ -124,16 +118,14 @@ async def download_video(
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH,
-                "cookiefile": "./app/cookies.txt/cookies.txt"
+                "ffmpeg_location": FFMPEG_PATH
             }
 
             audio_opts = {
                 "format": "bestaudio",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH,
-                "cookiefile": "./app/cookies.txt/cookies.txt"  
+                "ffmpeg_location": FFMPEG_PATH
             }
 
             video_file, audio_file = None, None
