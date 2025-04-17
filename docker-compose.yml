@@ -25,6 +25,8 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    volumes:
+    - ./cookies.txt:/cookies.txt:ro
 
   frontend:
     build:
