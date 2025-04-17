@@ -57,9 +57,9 @@ def update_yt_dlp():
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        ydl_opts = {    
+        ydl_opts = {
             "quiet": True,
-            "cookies": "./cookies.txt"
+            "cookies": "cookies.txt"  # либо "/cookies.txt", оба варианта подойдут
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -74,8 +74,9 @@ def get_video_info(url: str):
             
             return {"title": info["title"], "formats": formats}
     except Exception as e:
-        logger.error(f"Error fetching video info: {e}")
-        return None
+        import logging
+        logging.error(f"Error fetching video info: {e}")
+        return {"error": str(e)}
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
