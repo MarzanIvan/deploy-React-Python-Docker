@@ -6,7 +6,7 @@ def convert_cookies_to_netscape(cookies):
     :param cookies: Список cookie (JSON).
     :return: Строка успешного завершения операции.
     """
-    output_file = "./cookies.txt"
+    output_file = "/cookies.txt"
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write("# Netscape HTTP Cookie File\n")
         for cookie in cookies:
