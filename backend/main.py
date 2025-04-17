@@ -1,7 +1,4 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-import time
-import pickle
+
 import logging
 import os
 import subprocess
@@ -10,6 +7,10 @@ from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, We
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+import time
+import pickle
 
 # Импортируем компонент счётчика
 from counter import counter_app
@@ -174,7 +175,7 @@ async def download_video(
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
-                "cookiefile": "./app/cookies.txt/cookies.txt"  # 👈 Добавь
+                "cookiefile": "./app/cookies.txt/cookies.txt"
             }
 
             audio_opts = {
@@ -182,7 +183,7 @@ async def download_video(
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
-                "cookiefile": "./app/cookies.txt/cookies.txt"  # 👈 Добавь
+                "cookiefile": "./app/cookies.txt/cookies.txt"  
             }
 
             video_file, audio_file = None, None
