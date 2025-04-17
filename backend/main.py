@@ -74,9 +74,8 @@ def get_video_info(url: str):
             
             return {"title": info["title"], "formats": formats}
     except Exception as e:
-        import logging
-        logging.error(f"Error fetching video info: {e}")
-        return {"error": str(e)}
+         logger.error(f"Error fetching video info: {e}")
+         return None
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
