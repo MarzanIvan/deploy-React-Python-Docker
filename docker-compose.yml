@@ -26,7 +26,7 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     volumes:
-    - ./cookies.txt:/cookies.txt:ro
+    - ./cookies.txt:/cookies.txt
 
   frontend:
     build:
