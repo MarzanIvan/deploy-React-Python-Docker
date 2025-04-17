@@ -5,6 +5,8 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt --default-timeout=1250 future
 # Обновляем пакеты и устанавливаем ffmpeg + зависимости
 
+RUN sudo apt install chromium
+
 RUN apt-get update && \
     apt-get install -y ffmpeg && \
     apt-get clean && \
