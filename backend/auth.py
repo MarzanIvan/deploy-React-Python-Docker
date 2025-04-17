@@ -1,9 +1,25 @@
+
 # app/auth.py
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import time
 import os
 import pickle
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Dict
+
+auth_app = FastAPI()
+
+auth_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 COOKIES_PATH = "./app/cookies.txt/cookies.txt"
 
