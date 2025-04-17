@@ -16,10 +16,6 @@ from counter import counter_app
 
 COOKIES_PATH = "./app/cookies.txt/cookies.txt"
 
-
-
-
-
 # Настройка логирования
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
