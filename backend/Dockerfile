@@ -11,7 +11,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt update && sudo apt install -y firefox-esr
+RUN apt update && apt install -y firefox-esr
 RUN pip install selenium
 
 RUN pip install python-multipart
