@@ -11,9 +11,6 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt update && apt install -y firefox-esr
-RUN pip install selenium
-
 RUN pip install python-multipart
 RUN pip install uvicorn[standard]
 
