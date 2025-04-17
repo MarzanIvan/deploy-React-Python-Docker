@@ -57,15 +57,9 @@ def update_yt_dlp():
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        cookie_path = Path("/app/cookies.txt")
-
-        if not cookie_path.exists():
-            logger.warning("Файл cookies.txt не найден.")
-            return {"error": "Файл cookies.txt отсутствует."}
-
         ydl_opts = {
             "quiet": True,
-            "cookies": str(cookie_path)
+            "cookies": "./app/cookies.txt"
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
