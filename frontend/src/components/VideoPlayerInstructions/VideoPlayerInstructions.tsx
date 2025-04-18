@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import gomLogo from './../../img/GOMimg.png'
-import kmplayerLogo from './../../img/KMPlayer_Icon.png'
-import mpcLogo from './../../img/Media_Player_Classic_logo.png'
-import vlcLogo from './../../img/VLCimage.jpg'
+import avanmarket from './../../img/avanmarket.png'
+import lisskins from './../../img/lisskins.png'
+import tradeit from './../../img/tradeit.png'
 import './Video-player-layerInstructions.css'
 
 interface VideoPlayerInstructionsProps {
@@ -76,17 +76,17 @@ const VideoPlayerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 	const logos = [
 		{
 			name: 'avan.market',
-			src: vlcLogo,
+			src: avanmarket,
 			link: 'https://avan.market/?r=njkPFU9sqSEf',
 		},
 		{
 			name: 'lis-skins.com',
-			src: kmplayerLogo,
+			src: lisskins,
 			link: 'https://lis-skins.com/?rf=3223736',
 		},
 		{
 			name: 'tradeit.gg',
-			src: gomLogo,
+			src: tradeit,
 			link: 'https://avan.market/?r=njkPFU9sqSEf',
 		}
 	]
