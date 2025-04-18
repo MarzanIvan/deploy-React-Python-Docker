@@ -11,8 +11,6 @@ import sqlite3
 # Импортируем компонент счётчика
 from counter import counter_app
 
-
-
 def load_cookies_from_db(cookie_db_path):
     cookies = []
     try:
