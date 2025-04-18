@@ -132,7 +132,7 @@ interface VideoInfo {
 	formats: VideoFormat[]
 }
 
-const App: React.FC = () => {
+const App = () => {
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [url, setUrl] = useState<string>('')
 	const [videoFormatId, setVideoFormatId] = useState<string>('')
@@ -263,9 +263,8 @@ const App: React.FC = () => {
 	}
 
 	return (
-		<>
-		<AdModal />
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
+			
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
@@ -326,7 +325,7 @@ const App: React.FC = () => {
 					</nav>
 				</div>
 			</header>
-
+			<AdModal />
 			<main className='main-content'>
 				<div className='content-box'>
 					<h4 className='title'>{t.title}</h4>
