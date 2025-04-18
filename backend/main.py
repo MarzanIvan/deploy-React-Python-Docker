@@ -76,10 +76,9 @@ def load_cookies_from_db(cookie_db_path):
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        cookies = load_cookies_from_db(os.environ.get("COOKIE_DB_PATH", "/home/root/.mozilla/firefox/guest/cookies.sqlite"))  # Укажите путь к вашему файлу cookies.sqlite
         ydl_opts = {
             "quiet": True,
-            "cookiejar": cookies
+            "cookiefile": "cookies.txt"
         }  # Указываем cookies здесь}
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -142,7 +141,7 @@ async def download_video(
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
-                "cookiejar": cookies  # Указываем cookies здесь
+                "cookiefile": "cookies.txt"
             }
 
             audio_opts = {
@@ -150,7 +149,7 @@ async def download_video(
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
-                "cookiejar": cookies  # Указываем cookies здесь
+                "cookiefile": "cookies.txt"
             }
 
             video_file, audio_file = None, None
