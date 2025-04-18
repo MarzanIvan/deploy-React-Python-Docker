@@ -26,14 +26,19 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	>
 		&times;
 	</button>
-    <h2 className="text-xl font-semibold mb-4 text-center">
-					Пожалуйста, отключите блокировщик рекламы
-				</h2>
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">💼 Наши партнёр — avan.market, lis-skins, tradeit</h3>
 
-				<p className="mb-4 text-sm text-gray-600 text-center">
-					Реклама помогает нам развивать этот сервис. Вы можете временно отключить
-					AdBlock или добавить сайт в список исключений.
-				</p>
+			<p className="text-sm text-gray-600 mb-2">
+				🕹️ Покупай и продавай скины для <strong>CS2, Dota 2</strong> и <strong>Rust</strong> в пару кликов!
+			</p>
+
+			<p className="text-sm text-gray-600 mb-4">
+				💸 Получи <strong>$5 бонус</strong> при первой продаже или покупке.
+			</p>
+
+			<p className="text-xs text-gray-400 mb-4">
+				Переход на сайт партнёра поддержит развитие проекта VideoVault 🙏
+			</p>
 
 	<div className="flex justify-center">
 		<button
