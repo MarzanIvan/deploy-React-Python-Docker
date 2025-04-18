@@ -1,4 +1,5 @@
 import { FC, useEffect } from 'react'
+import PartnerBanner from './PartnerBanner'
 
 interface AdModalProps {
 	isOpen: boolean
@@ -26,14 +27,11 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	>
 		&times;
 	</button>
-	<h2 className="text-xl font-semibold mb-4 text-center">
-        Покупай и продавай скины CS2 DOTA2 Rust в пару кликов. <br/>Buy and sell your skins in a couple of clicks!
-	</h2>
-
-	<p className="mb-4 text-sm text-gray-600 text-center">
-		Чтобы продолжить перейдите на сайт партнёра. Это поможет этому проекту.<br/>
-        5$ на первую продажу и покупку.
-	</p>
+	<div className="space-y-4">
+					<PartnerBanner name="Avan.market" link="https://avan.market" />
+					<PartnerBanner name="Lis-Skins" link="https://lis-skins.com" buttonColor="bg-pink-600" />
+					<PartnerBanner name="Tradeit" link="https://tradeit.gg" buttonColor="bg-green-600" />
+				</div>
 
 	<div className="flex justify-center">
 		<button
