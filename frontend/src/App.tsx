@@ -262,16 +262,7 @@ const App = () => {
 	}
 
 	return (
-		<>
-		
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
-		<AdModal
-		isOpen={isAdOpen}
-		onClose={() => {
-		setIsAdOpen(false)
-		performFetch() // <- Запускаем API-запрос после закрытия модалки
-		}}/>
-
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
@@ -332,7 +323,12 @@ const App = () => {
 					</nav>
 				</div>
 			</header>
-			<AdModal />
+			<AdModal
+		isOpen={isAdOpen}
+		onClose={() => {
+		setIsAdOpen(false)
+		performFetch() // <- Запускаем API-запрос после закрытия модалки
+		}}/>
 			<main className='main-content'>
 				<div className='content-box'>
 					<h4 className='title'>{t.title}</h4>
@@ -474,7 +470,6 @@ const App = () => {
 				</div>
 			</footer>
 		</div>
-		</>
 	)
 }
 
