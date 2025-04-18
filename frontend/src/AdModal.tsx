@@ -1,45 +1,48 @@
-import React, { FC, useEffect, useState } from 'react'
-import { FaTimes } from 'react-icons/fa'
+import { FC, useEffect } from 'react'
 
-const AdModal: FC = () => {
-	const [isOpen, setIsOpen] = useState<boolean>(false)
+interface AdModalProps {
+	isOpen: boolean
+	onClose: () => void
+}
 
+const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	useEffect(() => {
-		const dismissed = localStorage.getItem('adDismissed')
-		if (!dismissed) setIsOpen(true)
-	}, [])
-
-	const closeModal = (): void => {
-		setIsOpen(false)
-		localStorage.setItem('adDismissed', 'true')
-	}
+		const handleEsc = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onClose()
+		}
+		document.addEventListener('keydown', handleEsc)
+		return () => document.removeEventListener('keydown', handleEsc)
+	}, [onClose])
 
 	if (!isOpen) return null
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-			<div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-xl w-[90%] max-w-md relative animate-fadeIn">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+			<div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-lg">
 				<button
-					className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:hover:text-white transition"
-					onClick={closeModal}
+					onClick={onClose}
+					className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+					aria-label="Close"
 				>
-					<FaTimes className="w-5 h-5" />
+					&times;
 				</button>
 
-				<h2 className="text-xl font-semibold mb-2 text-center">Поддержи проект</h2>
-				<p className="text-sm text-gray-700 dark:text-gray-300 text-center mb-4">
-					Если тебе понравился <b>VideoVault</b>, поддержи нас на Boosty — это поможет с хостингом и разработкой новых функций.
+				<h2 className="text-xl font-semibold mb-4 text-center">
+					Пожалуйста, отключите блокировщик рекламы
+				</h2>
+
+				<p className="mb-4 text-sm text-gray-600 text-center">
+					Реклама помогает нам развивать этот сервис. Вы можете временно отключить
+					AdBlock или добавить сайт в список исключений.
 				</p>
 
 				<div className="flex justify-center">
-					<a
-						href="https://boosty.to/flowseal"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-full transition"
+					<button
+						onClick={onClose}
+						className="px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
 					>
-						Перейти на Boosty
-					</a>
+						Понятно
+					</button>
 				</div>
 			</div>
 		</div>

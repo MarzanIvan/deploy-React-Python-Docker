@@ -133,6 +133,8 @@ interface VideoInfo {
 }
 
 const App = () => {
+	const [isAdOpen, setIsAdOpen] = useState(false)
+	const [isInfoPending, setIsInfoPending] = useState(false)
 	const [url, setUrl] = useState<string>('')
 	const [videoFormatId, setVideoFormatId] = useState<string>('')
 	const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
@@ -178,19 +180,26 @@ const App = () => {
 	}
 
 	const fetchVideoInfo = async () => {
+		setIsAdOpen(true)
+	}
+
+	const performFetch = async () => {
 		try {
+			setIsInfoPending(true)
 			const response = await axios.post(
 				'/api/get_video_info/',
-				new URLSearchParams({url})
+				new URLSearchParams({ url })
 			)
 			const data = response.data
-
 			setVideoInfo(data)
 			toast.success('Successfully fetched video info.')
 		} catch (error) {
 			toast.error('Error fetching video info.')
+		} finally {
+			setIsInfoPending(false)
 		}
 	}
+	
 
 	const handleDownload = async () => {
 		if (!videoFormatId) {
@@ -254,9 +263,15 @@ const App = () => {
 
 	return (
 		<>
-		<AdModal />
+		
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
-			
+		<AdModal
+		isOpen={isAdOpen}
+		onClose={() => {
+		setIsAdOpen(false)
+		performFetch() // <- Запускаем API-запрос после закрытия модалки
+		}}/>
+
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
@@ -330,13 +345,14 @@ const App = () => {
 						onChange={e => setUrl(e.target.value)}
 					/>
 
-					<button
-						className='primary-button'
-						onClick={fetchVideoInfo}
-						disabled={!url}
-					>
-						{t.fetchVideoInfo}
-					</button>
+<button
+	className='primary-button'
+	onClick={fetchVideoInfo}
+	disabled={!url || isInfoPending}
+>
+	{isInfoPending ? 'Loading...' : t.fetchVideoInfo}
+</button>
+
 
 					{videoInfo && (
 						<div>
