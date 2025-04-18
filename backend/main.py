@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 import asyncio
-import sqlite3
+
 from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,32 +55,16 @@ def update_yt_dlp():
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении yt-dlp: {e}")
 
-def load_cookies_from_db(cookie_db_path):
-    cookies = []
-    try:
-        conn = sqlite3.connect(cookie_db_path)
-        cursor = conn.cursor()
 
-        cursor.execute("SELECT name, value, domain FROM moz_cookies")
-        rows = cursor.fetchall()
-
-        for row in rows:
-            cookies.append(f"{row[0]}={row[1]}; domain={row[2]}")
-
-        conn.close()
-    except Exception as e:
-        logger.error(f"Ошибка при загрузке cookies: {e}")
-    
-    return cookies
 
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        cookies = load_cookies_from_db("/home/root/.mozilla/firefox/guest/cookies.sqlite")  # Укажите путь к вашему файлу cookies.sqlite
+        
         
         ydl_opts = {
-            "quiet": True,
-            "cookiejar": cookies  # Указываем cookies здесь
+            "quiet": True#,
+            #"cookiejar": cookies  # Указываем cookies здесь
         }
 
         with YoutubeDL(ydl_opts) as ydl:
@@ -138,22 +122,22 @@ async def download_video(
 
         try:
             update_yt_dlp()
-            cookies = load_cookies_from_db("/home/root/.mozilla/firefox/guest/cookies.sqlite")  # Укажите путь к вашему файлу cookies.sqlite
+            #cookies = load_cookies_from_db("/home/root/.mozilla/firefox/guest/cookies.sqlite")  # Укажите путь к вашему файлу cookies.sqlite
 
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH,
-                "cookiejar": cookies  # Указываем cookies здесь
+                "ffmpeg_location": FFMPEG_PATH#,
+                #"cookiejar": cookies  
             }
 
             audio_opts = {
                 "format": "bestaudio",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH,
-                "cookiejar": cookies  # Указываем cookies здесь
+                "ffmpeg_location": FFMPEG_PATH#,
+                #"cookiejar": cookies  
             }
 
             video_file, audio_file = None, None
