@@ -133,6 +133,7 @@ interface VideoInfo {
 }
 
 const App = () => {
+	const [showAd, setShowAd] = useState<boolean>(true)
 	const [url, setUrl] = useState<string>('')
 	const [videoFormatId, setVideoFormatId] = useState<string>('')
 	const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
@@ -153,12 +154,19 @@ const App = () => {
 	const t = translations[language]
 
 	useEffect(() => {
+		const dismissed = localStorage.getItem('adDismissed')
+		if (dismissed) setShowAd(false)
 		const savedTheme = localStorage.getItem('theme')
 		if (savedTheme === 'dark') {
 			setIsDarkMode(true)
 			document.body.classList.add('dark-theme')
 		}
 	}, [])
+
+	const closeAd = (): void => {
+		setShowAd(false)
+		localStorage.setItem('adDismissed', 'true')
+	}
 
 	const toggleTheme = () => {
 		setIsDarkMode(prevMode => {
@@ -254,6 +262,19 @@ const App = () => {
 
 	return (
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
+			{showAd && (
+				<div className='ad-banner'>
+					<div className='ad-content'>
+						<span>🎁 Специальное предложение — скидка 30% на премиум!</span>
+						<a href='https://example.com' target='_blank' rel='noopener noreferrer'>
+							Подробнее
+						</a>
+					</div>
+					<button className='ad-close-button' onClick={closeAd} aria-label='Закрыть рекламу'>
+						<AiOutlineClose />
+					</button>
+				</div>
+			)}
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
