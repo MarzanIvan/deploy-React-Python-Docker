@@ -36,12 +36,18 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 			</p>
 
 	<div className="flex justify-center">
-		<button
-			onClick={onClose}
-			className="primary-button px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
-		>
-			Перейти
-		</button>
+    <a
+	href="https://avan.market/?r=njkPFU9sqSEf"
+	target="_blank"
+	rel="noopener noreferrer"
+>
+	<button
+		onClick={onClose}
+		className="primary-button px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
+	>
+		Перейти
+	</button>
+</a>
 	</div>
 </div>
 </div>
