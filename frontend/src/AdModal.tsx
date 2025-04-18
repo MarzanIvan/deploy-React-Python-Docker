@@ -26,21 +26,13 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	>
 		&times;
 	</button>
-
-	{/* Баннер (JPG изображение) */}
-	<img
-		src="/img/VLCimage.jpg"
-		alt="Ad Banner"
-		className="mb-4 rounded-lg max-h-48 object-cover w-full"
-	/>
-
 	<h2 className="text-xl font-semibold mb-4 text-center">
-		Пожалуйста, отключите блокировщик рекламы
+        Покупай и продавай скины CS2 DOTA2 Rust в пару кликов. <br/>Buy and sell your skins in a couple of clicks!
 	</h2>
 
 	<p className="mb-4 text-sm text-gray-600 text-center">
-		Реклама помогает нам развивать этот сервис. Вы можете временно отключить
-		AdBlock или добавить сайт в список исключений.
+		Чтобы продолжить перейдите на сайт партнёра. Это поможет этому проекту.<br/>
+        5$ на первую продажу и покупку.
 	</p>
 
 	<div className="flex justify-center">
@@ -48,7 +40,7 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 			onClick={onClose}
 			className="px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
 		>
-			Понятно
+			Перейти
 		</button>
 	</div>
 </div>
