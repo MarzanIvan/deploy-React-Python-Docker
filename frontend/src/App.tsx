@@ -253,8 +253,10 @@ const App = () => {
 	}
 
 	return (
+		<>
+		<AdModal />
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
-			<AdModal />
+			
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
@@ -456,6 +458,7 @@ const App = () => {
 				</div>
 			</footer>
 		</div>
+		</>
 	)
 }
 
