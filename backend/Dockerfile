@@ -14,7 +14,7 @@ RUN apt-get update && \
 RUN pip install python-multipart
 RUN pip install uvicorn[standard]
 
-
+COPY . .
 
 CMD ["python", "-m", "uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
 
