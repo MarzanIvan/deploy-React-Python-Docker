@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import asyncio
+import sqlite3
 from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,6 +74,24 @@ def get_video_info(url: str):
     except Exception as e:
         logger.error(f"Error fetching video info: {e}")
         return None
+
+def load_cookies_from_db(cookie_db_path):
+    cookies = []
+    try:
+        conn = sqlite3.connect(cookie_db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name, value, domain FROM moz_cookies")
+        rows = cursor.fetchall()
+
+        for row in rows:
+            cookies.append(f"{row[0]}={row[1]}; domain={row[2]}")
+
+        conn.close()
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке cookies: {e}")
+    
+    return cookies
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
