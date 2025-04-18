@@ -2,7 +2,6 @@ import logging
 import os
 import subprocess
 import asyncio
-
 from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,18 +54,10 @@ def update_yt_dlp():
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении yt-dlp: {e}")
 
-
-
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        
-        
-        ydl_opts = {
-            "quiet": True#,
-            #"cookiejar": cookies  # Указываем cookies здесь
-        }
-
+        ydl_opts = {"quiet": True}
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = [{
@@ -122,22 +113,19 @@ async def download_video(
 
         try:
             update_yt_dlp()
-            #cookies = load_cookies_from_db("/home/root/.mozilla/firefox/guest/cookies.sqlite")  # Укажите путь к вашему файлу cookies.sqlite
 
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH#,
-                #"cookiejar": cookies  
+                "ffmpeg_location": FFMPEG_PATH
             }
 
             audio_opts = {
                 "format": "bestaudio",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
-                "ffmpeg_location": FFMPEG_PATH#,
-                #"cookiejar": cookies  
+                "ffmpeg_location": FFMPEG_PATH
             }
 
             video_file, audio_file = None, None
