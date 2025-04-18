@@ -21,13 +21,6 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 		<div className='content-box'>
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
 			<div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-lg">
-	<button
-		onClick={onClose}
-		className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-		aria-label="Close"
-	>
-		&times;
-	</button>
     <h3 className="text-lg font-semibold text-gray-800 mb-1">💼 Наши партнёр — avan.market, lis-skins, tradeit</h3>
 
 			<p className="text-sm text-gray-600 mb-2">
