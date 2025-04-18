@@ -1,5 +1,4 @@
 import { FC, useEffect } from 'react'
-import PartnerBanner from './PartnerBanner'
 
 interface AdModalProps {
 	isOpen: boolean
@@ -27,11 +26,14 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	>
 		&times;
 	</button>
-	<div className="space-y-4">
-					<PartnerBanner name="Avan.market" link="https://avan.market" />
-					<PartnerBanner name="Lis-Skins" link="https://lis-skins.com" buttonColor="bg-pink-600" />
-					<PartnerBanner name="Tradeit" link="https://tradeit.gg" buttonColor="bg-green-600" />
-				</div>
+    <h2 className="text-xl font-semibold mb-4 text-center">
+					Пожалуйста, отключите блокировщик рекламы
+				</h2>
+
+				<p className="mb-4 text-sm text-gray-600 text-center">
+					Реклама помогает нам развивать этот сервис. Вы можете временно отключить
+					AdBlock или добавить сайт в список исключений.
+				</p>
 
 	<div className="flex justify-center">
 		<button
