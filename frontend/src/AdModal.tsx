@@ -1,5 +1,4 @@
 import { FC, useEffect } from 'react'
-import vlcLogo from './../../img/VLCimage.jpg'
 
 interface AdModalProps {
 	isOpen: boolean
@@ -30,7 +29,7 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 
 	{/* Баннер (JPG изображение) */}
 	<img
-		src={vlcLogo}
+		src="/img/VLCimage.jpg"
 		alt="Ad Banner"
 		className="mb-4 rounded-lg max-h-48 object-cover w-full"
 	/>
