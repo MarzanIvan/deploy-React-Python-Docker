@@ -11,7 +11,7 @@ import './index.css'
 import vvlogo from './logo.svg'
 import logoWhite from './logo-white.svg'
 import logoBlack from './logo-black.svg'
-
+import AdModal from './AdModal'
 
 interface Translations {
 	title: string
@@ -132,8 +132,8 @@ interface VideoInfo {
 	formats: VideoFormat[]
 }
 
-const App = () => {
-	const [showAd, setShowAd] = useState<boolean>(true)
+const App: React.FC = () => {
+	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [url, setUrl] = useState<string>('')
 	const [videoFormatId, setVideoFormatId] = useState<string>('')
 	const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
@@ -155,7 +155,7 @@ const App = () => {
 
 	useEffect(() => {
 		const dismissed = localStorage.getItem('adDismissed')
-		if (dismissed) setShowAd(false)
+		if (!dismissed) setIsOpen(true)
 		const savedTheme = localStorage.getItem('theme')
 		if (savedTheme === 'dark') {
 			setIsDarkMode(true)
@@ -163,10 +163,12 @@ const App = () => {
 		}
 	}, [])
 
-	const closeAd = (): void => {
-		setShowAd(false)
+	const closeModal = (): void => {
+		setIsOpen(false)
 		localStorage.setItem('adDismissed', 'true')
 	}
+
+	if (!isOpen) return null
 
 	const toggleTheme = () => {
 		setIsDarkMode(prevMode => {
@@ -261,20 +263,9 @@ const App = () => {
 	}
 
 	return (
+		<>
+		<AdModal />
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
-			{showAd && (
-				<div className='ad-banner'>
-					<div className='ad-content'>
-						<span>🎁 Специальное предложение — скидка 30% на премиум!</span>
-						<a href='https://example.com' target='_blank' rel='noopener noreferrer'>
-							Подробнее
-						</a>
-					</div>
-					<button className='ad-close-button' onClick={closeAd} aria-label='Закрыть рекламу'>
-						<AiOutlineClose />
-					</button>
-				</div>
-			)}
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
@@ -476,7 +467,9 @@ const App = () => {
 				</div>
 			</footer>
 		</div>
+		</>
 	)
 }
+
 
 export default App
