@@ -11,25 +11,6 @@ import sqlite3
 # Импортируем компонент счётчика
 from counter import counter_app
 
-def load_cookies_from_db(cookie_db_path):
-    cookies = []
-    try:
-        conn = sqlite3.connect(cookie_db_path)
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT name, value, domain FROM moz_cookies")
-        rows = cursor.fetchall()
-
-        for row in rows:
-            cookies.append(f"{row[0]}={row[1]}; domain={row[2]}")
-
-        conn.close()
-    except Exception as e:
-        logger.error(f"Ошибка при загрузке cookies: {e}")
-    
-    return cookies
-
-
 # Настройка логирования
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -73,6 +54,24 @@ def update_yt_dlp():
         logger.info("yt-dlp обновлена успешно!")
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении yt-dlp: {e}")
+
+def load_cookies_from_db(cookie_db_path):
+    cookies = []
+    try:
+        conn = sqlite3.connect(cookie_db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name, value, domain FROM moz_cookies")
+        rows = cursor.fetchall()
+
+        for row in rows:
+            cookies.append(f"{row[0]}={row[1]}; domain={row[2]}")
+
+        conn.close()
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке cookies: {e}")
+    
+    return cookies
 
 # Функция получения информации о видео
 def get_video_info(url: str):
