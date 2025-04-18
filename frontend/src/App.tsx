@@ -466,7 +466,6 @@ const App = () => {
 				</div>
 			</footer>
 		</div>
-		</>
 	)
 }
 
