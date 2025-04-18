@@ -25,6 +25,10 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    volumes:
+      - /home/root/.mozilla/firefox/guest:/home/root/.mozilla/firefox/guest:ro  # Монтируем файл cookies.sqlite
+    environment:
+      - COOKIE_DB_PATH=/home/root/.mozilla/firefox/guest/cookies.sqlite
 
   frontend:
     build:

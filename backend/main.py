@@ -76,7 +76,7 @@ def load_cookies_from_db(cookie_db_path):
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        cookies = load_cookies_from_db("/home/root/.mozilla/firefox/guest/cookies.sqlite")  # Укажите путь к вашему файлу cookies.sqlite
+        cookies = load_cookies_from_db(os.environ.get("COOKIE_DB_PATH", "/home/root/.mozilla/firefox/guest/cookies.sqlite"))  # Укажите путь к вашему файлу cookies.sqlite
         ydl_opts = {
             "quiet": True,
             "cookiejar": cookies
@@ -136,7 +136,7 @@ async def download_video(
 
         try:
             update_yt_dlp()
-            cookies = load_cookies_from_db("/home/root/.mozilla/firefox/guest/cookies.sqlite")  # Укажите путь к вашему файлу cookies.sqlite
+            cookies = load_cookies_from_db(os.environ.get("COOKIE_DB_PATH", "/home/root/.mozilla/firefox/guest/cookies.sqlite"))  # Укажите путь к вашему файлу cookies.sqlite
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
