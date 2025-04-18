@@ -16,13 +16,13 @@ const VideoPlayerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 
 	const translations = {
 		en: {
-			title: 'Video Player Installation Guide',
+			title: 'How to Profitably Buy & Sell Skins for CS2, Dota 2, Rust',
 			steps: [
-				'1. First, check if VLC Media Player is installed. If not, download it [here](https://www.videolan.org/vlc/).',
-				"2. If VLC doesn't work or the video doesn't play, try KMPlayer. Download it [here](https://kmplayer.com/).",
-				'3. Other recommended video players: GOM Player and Media Player Classic. Ensure you have the latest versions installed.',
-				"4. If the video loads without sound or picture, try downloading it in a lower quality. For example, if the video doesn't play in 1440p, try 1080p.",
-				'5. We recommend downloading video in WEBM format. If you encounter issues, try MP4 format. This should help with playback on your computer.',
+				'1. Visit our trusted partner platform: [avan.market](https://avan.market/?r=njkPFU9sqSEf).',
+				'2. Sign up or log in to your account. The referral link grants you a $5 bonus on your first trade!',
+				'3. Browse the marketplace for CS2, Dota 2, or Rust skins and add your favorites to the cart.',
+				'4. To sell, head to your inventory tab and list your skins for sale in just a couple of clicks.',
+				'5. Complete your first purchase or sale to receive your bonus. Enjoy fast trades and low fees!',
 			],
 			buttons: {
 				previous: 'Previous Step',
@@ -30,13 +30,13 @@ const VideoPlayerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 			},
 		},
 		ru: {
-			title: 'Руководство по установке видеоплеера',
+			title: 'Как выгодно покупать и продавать скины CS2, Dota 2, Rust',
 			steps: [
-				'1. Сначала проверьте, установлен ли VLC Media Player. Если нет, скачайте его [здесь](https://www.videolan.org/vlc/).',
-				'2. Если VLC не работает или видео не воспроизводится, попробуйте KMPlayer. Скачайте его [здесь](https://kmplayer.com/).',
-				'3. Другие рекомендуемые видеоплееры: GOM Player и Media Player Classic. Убедитесь, что у вас установлены последние версии.',
-				'4. Если видео загружается без звука или изображения, попробуйте скачать его в более низком качестве. Например, если видео не воспроизводится в 1440p, попробуйте 1080p.',
-				'5. Мы рекомендуем скачивать видео в формате WEBM. Если возникают проблемы, попробуйте формат MP4. Это должно помочь воспроизвести видео на вашем компьютере.',
+				'1. Перейдите на нашу проверенную партнёрскую платформу: [avan.market](https://avan.market/?r=njkPFU9sqSEf).',
+				'2. Зарегистрируйтесь или войдите в аккаунт. Переход по ссылке даёт вам бонус $5 на первую сделку!',
+				'3. Найдите интересующие вас скины для CS2, Dota 2 или Rust и добавьте их в корзину.',
+				'4. Хотите продать? Откройте вкладку инвентаря и выставьте скины на продажу в пару кликов.',
+				'5. Совершите первую покупку или продажу, чтобы получить бонус. Быстрые сделки и низкие комиссии!',
 			],
 			buttons: {
 				previous: 'Предыдущий шаг',
@@ -44,19 +44,19 @@ const VideoPlayerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 			},
 		},
 		zh: {
-			title: '视频播放器安装指南',
+			title: '如何高效购买和出售 CS2、Dota 2 和 Rust 皮肤',
 			steps: [
-				'1. 首先检查是否安装了 VLC 媒体播放器。如果没有，请点击[这里](https://www.videolan.org/vlc/)下载。',
-				'2. 如果 VLC 不工作或视频无法播放，请尝试 KMPlayer。点击[这里](https://kmplayer.com/)下载。',
-				'3. 其他推荐的视频播放器：GOM 播放器和媒体播放器经典版。请确保您安装了最新版本。',
-				'4. 如果视频加载时没有声音或画面，请尝试以较低的质量下载。例如，如果视频无法在 1440p 下播放，请尝试 1080p。',
-				'5. 我们推荐以 WEBM 格式下载视频。如果遇到问题，请尝试 MP4 格式。这有助于在您的 电脑上播放。',
+				'1. 访问我们值得信赖的合作伙伴平台：[avan.market](https://avan.market/?r=njkPFU9sqSEf)。',
+				'2. 注册或登录账户。通过推荐链接首次交易可获得 5 美元奖励！',
+				'3. 浏览 CS2、Dota 2 或 Rust 的皮肤市场并添加你喜欢的皮肤。',
+				'4. 想出售皮肤？打开库存标签并轻松列出你的皮肤进行销售。',
+				'5. 完成首次购买或出售以领取奖励。享受快速交易和低手续费！',
 			],
 			buttons: {
 				previous: '上一步',
 				next: '下一步',
 			},
-		},
+		}
 	}
 
 	const currentTranslation = translations[language]
@@ -75,25 +75,20 @@ const VideoPlayerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 
 	const logos = [
 		{
-			name: 'VLC Media Player',
+			name: 'avan.market',
 			src: vlcLogo,
-			link: 'https://www.videolan.org/vlc/',
+			link: 'https://avan.market/?r=njkPFU9sqSEf',
 		},
 		{
-			name: 'KMPlayer',
+			name: 'lis-skins.com',
 			src: kmplayerLogo,
-			link: 'https://kmplayer.com/',
+			link: 'https://lis-skins.com/?rf=3223736',
 		},
 		{
-			name: 'GOM Player',
+			name: 'tradeit.gg',
 			src: gomLogo,
-			link: 'https://www.gomlab.com/',
-		},
-		{
-			name: 'Media Player Classic',
-			src: mpcLogo,
-			link: 'https://mpc-hc.org/',
-		},
+			link: 'https://avan.market/?r=njkPFU9sqSEf',
+		}
 	]
 
 	return (
