@@ -18,7 +18,8 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	if (!isOpen) return null
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<div className='content-box'>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
 			<div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-lg">
 	<button
 		onClick={onClose}
@@ -50,7 +51,7 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 		</button>
 	</div>
 </div>
-
+</div>
 		</div>
 	)
 }
