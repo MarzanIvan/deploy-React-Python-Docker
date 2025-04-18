@@ -133,7 +133,6 @@ interface VideoInfo {
 }
 
 const App = () => {
-	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [url, setUrl] = useState<string>('')
 	const [videoFormatId, setVideoFormatId] = useState<string>('')
 	const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
@@ -154,21 +153,12 @@ const App = () => {
 	const t = translations[language]
 
 	useEffect(() => {
-		const dismissed = localStorage.getItem('adDismissed')
-		if (!dismissed) setIsOpen(true)
 		const savedTheme = localStorage.getItem('theme')
 		if (savedTheme === 'dark') {
 			setIsDarkMode(true)
 			document.body.classList.add('dark-theme')
 		}
 	}, [])
-
-	const closeModal = (): void => {
-		setIsOpen(false)
-		localStorage.setItem('adDismissed', 'true')
-	}
-
-	if (!isOpen) return null
 
 	const toggleTheme = () => {
 		setIsDarkMode(prevMode => {
@@ -264,7 +254,7 @@ const App = () => {
 
 	return (
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
-			
+			<AdModal />
 			<header className='header'>
 				<div className='container header-content'>
 					<div className='header-left'>
