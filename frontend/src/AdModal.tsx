@@ -1,4 +1,5 @@
 import { FC, useEffect } from 'react'
+import './index.css'
 
 interface AdModalProps {
 	isOpen: boolean
@@ -37,13 +38,13 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 			</p>
 
 			<p className="text-xs text-gray-400 mb-4">
-				Переход на сайт партнёра поддержит развитие проекта VideoVault 🙏
+				Переход на сайт партнёра поддержит развитие проекта videovault.ru!
 			</p>
 
 	<div className="flex justify-center">
 		<button
 			onClick={onClose}
-			className="px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
+			className="primary-button px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
 		>
 			Перейти
 		</button>
