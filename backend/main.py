@@ -2,11 +2,11 @@ import logging
 import os
 import subprocess
 import asyncio
+import sqlite3
 from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-import sqlite3
 
 # Импортируем компонент счётчика
 from counter import counter_app
