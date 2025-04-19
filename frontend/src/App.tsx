@@ -7,6 +7,7 @@ import {ToastContainer, toast} from 'react-toastify'
 import LanguageSwitcher from './components/languageSwitcher/LanguageSwitcher'
 import OnlineCounter from './components/OnlineCounter/OnlineCounter'
 import VideoPlayerInstructions from './components/VideoPlayerInstructions/VideoPlayerInstructions'
+import PathnerInstructions from './components/PartnersBlock/PathnerInstructions'
 import './index.css'
 import vvlogo from './logo.svg'
 import logoWhite from './logo-white.svg'
@@ -421,6 +422,10 @@ const App = () => {
 
 				<section id='instructions'>
 					<VideoPlayerInstructions language={language}/>
+				</section>
+				<br/>
+				<section id='instructions'>
+					<PathnerInstructions language={language}/>
 				</section>
 				<section id='features' className='features'>
 					<div className='container'>
