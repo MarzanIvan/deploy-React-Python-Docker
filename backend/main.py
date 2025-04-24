@@ -103,7 +103,7 @@ async def video_info(url: str = Form(...)):
         return video_info
     raise HTTPException(status_code=400, detail="Не удалось получить информацию о видео")
 
-@app.websocket("/socket/")
+@app.websocket("wss/socket/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
