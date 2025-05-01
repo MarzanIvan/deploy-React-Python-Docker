@@ -135,7 +135,6 @@ async def download_video(
 
         try:
             update_yt_dlp()
-            cookies = load_cookies_from_db(os.environ.get("COOKIE_DB_PATH", "/home/root/.mozilla/firefox/guest/cookies.sqlite"))  # Укажите путь к вашему файлу cookies.sqlite
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
