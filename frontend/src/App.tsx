@@ -225,7 +225,7 @@ const App = () => {
 			toast.info('Please wait while your video is being downloaded.')
 
 			// Подключаемся к WebSocket для получения обновлений прогресса
-			const socket = new WebSocket('wss://videovault.ru/api/socket/')
+			const socket = new WebSocket('wss://videovault.ru/socket/')
 
 			socket.onmessage = function (event) {
 				const data = JSON.parse(event.data)
