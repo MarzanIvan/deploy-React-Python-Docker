@@ -207,54 +207,73 @@ const App = () => {
 			toast.error('Please select a video format.')
 			return
 		}
-
+	
 		try {
 			setLoading(true)
 			setCompleted(false)
+	
+			// Отправка запроса на начало загрузки
 			const response = await axios.post(
 				'/api/download_video/',
-				new URLSearchParams({
+				{
 					url,
 					video_format_id: videoFormatId,
 					download_audio: downloadAudio.toString(),
-				})
+				}
 			)
-			const { file_name, download_path } = response.data;
-
+	
+			const { file_name, download_path } = response.data;  // Получаем имя файла и путь
+	
 			setProgress(0)
 			setMessage('Download started...')
 			toast.info('Please wait while your video is being downloaded.')
-
-			// Подключаемся к WebSocket для получения обновлений прогресса
+	
+			// Подключаемся к WebSocket для получения прогресса
 			const socket = new WebSocket('wss://videovault.ru/socket/')
-
+	
 			socket.onmessage = function (event) {
 				const data = JSON.parse(event.data)
+	
+				// Обновление прогресса
 				setProgress(data.progress)
 				setMessage(`${data.message} (${data.progress.toFixed(2)}%)`)
-
+	
+				// Завершение загрузки или ошибка
 				if (data.progress >= 100 || data.completed) {
 					socket.close()
 					setLoading(false)
 					setCompleted(true)
-					toast.success(t.downloadComplete)
+					toast.success('Download complete!')
+	
+					// Начинаем скачивание файла для гостя
+					window.location.href = `/download/${file_name}`;  // Пример ссылки на скачивание
 				} else if (data.progress === -1) {
 					socket.close()
 					setLoading(false)
 					toast.error('Download error. Please try a different format.')
 				}
 			}
-
+	
 			socket.onerror = function (error) {
 				socket.close()
 				setLoading(false)
 				toast.error('WebSocket error. Please try again.')
 			}
+	
+			socket.onclose = function () {
+				// Закрытие WebSocket после завершения или ошибки
+				if (!completed) {
+					setLoading(false)
+					toast.error('Connection closed unexpectedly.')
+				}
+			}
+	
 		} catch (error) {
 			setLoading(false)
 			toast.error('Error during download. Please try a different format.')
 		}
 	}
+	
 
 	const cancelDownload = () => {
 		setLoading(false)
