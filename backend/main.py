@@ -8,6 +8,8 @@ from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from fastapi.responses import FileResponse
+from fastapi import Request
+from urllib.parse import unquote
 
 # Импортируем компонент счётчика
 from counter import counter_app
@@ -179,15 +181,13 @@ async def download_video(
     background_tasks.add_task(download_task, url, video_format_id, download_audio)
     return {"message": "Загрузка началась в фоне. Пожалуйста, ожидайте."}
 
+@app.get("/download/{file_name}")
+async def download_file(file_name: str, request: Request):
+    decoded_name = unquote(file_name)
+    file_path = os.path.join(DOWNLOAD_DIR, decoded_name)
 
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Файл не найден")
 
-@app.get("/download/{filename}")
-async def download_file(filename: str):
-    file_path = os.path.join(DOWNLOAD_DIR, filename)
-    if os.path.isfile(file_path):
-        return FileResponse(
-            path=file_path,
-            filename=filename,
-            media_type="application/octet-stream"
-        )
-    raise HTTPException(status_code=404, detail="Файл не найден")
+    return FileResponse(path=file_path, filename=decoded_name, media_type='application/octet-stream')
+
