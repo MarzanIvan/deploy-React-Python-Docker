@@ -29,6 +29,9 @@ services:
       - /home/root/.mozilla/firefox/guest:/root/.mozilla/firefox:ro  # Монтируем файл cookies.sqlite
     environment:
       - COOKIE_DB_PATH=/home/root/.mozilla/firefox/guest/cookies.sqlite
+    mem_limit: 1024m
+    mem_reservation: 256m
+    restart: always
 
   frontend:
     build:
