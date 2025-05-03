@@ -238,8 +238,11 @@ const App = () => {
 					setLoading(false)
 					setCompleted(true)
 					toast.success(t.downloadComplete)
-					const fileUrl = `/download/${encodeURIComponent(file_name)}`;
-					window.open(fileUrl, '_blank');
+					if (data.filename) {
+						const encodedFileName = encodeURIComponent(data.filename)
+						const downloadUrl = `/download/${encodedFileName}`
+						window.open(downloadUrl, '_blank')  // <-- Открываем вкладку и инициируем загрузку
+					}
 				} else if (data.progress === -1) {
 					socket.close()
 					setLoading(false)
