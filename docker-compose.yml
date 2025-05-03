@@ -26,7 +26,8 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     volumes:
-      - /home/root/.mozilla/firefox/guest:/root/.mozilla/firefox:ro  # Монтируем файл cookies.sqlite
+      - /home/root/.mozilla/firefox/guest:/root/.mozilla/firefox:ro  # Мон
+      - ./downloads:/root/Downloads
     environment:
       - COOKIE_DB_PATH=/home/root/.mozilla/firefox/guest/cookies.sqlite
     mem_limit: 1024m
