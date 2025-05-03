@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, We
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from fastapi.responses import FileResponse
 
 # Импортируем компонент счётчика
 from counter import counter_app
@@ -156,6 +157,7 @@ async def download_video(
                 info = ydl.extract_info(url, download=False)
                 ydl.download([url])
                 video_file = os.path.join(DOWNLOAD_DIR, f"{info['title']}_{info['timestamp']}_video.{info['ext']}")
+                download_progress['filename'] = os.path.basename(video_file)
 
             if download_audio:
                 with YoutubeDL(audio_opts) as ydl:
@@ -163,6 +165,7 @@ async def download_video(
                     audio_file = os.path.join(DOWNLOAD_DIR, f"{info['title']}_{info['timestamp']}_audio.{info['ext']}")
 
                 output_file = os.path.join(DOWNLOAD_DIR, f"final_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
+                download_progress['filename'] = os.path.basename(output_file)
 
                 ffmpeg_command = [FFMPEG_PATH, '-i', video_file, '-i', audio_file, '-c:v', 'copy', '-c:a', 'aac', '-threads', '4', '-preset', 'ultrafast', output_file]
                 subprocess.run(ffmpeg_command, shell=True)
@@ -175,3 +178,16 @@ async def download_video(
 
     background_tasks.add_task(download_task, url, video_format_id, download_audio)
     return {"message": "Загрузка началась в фоне. Пожалуйста, ожидайте."}
+
+
+
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    file_path = os.path.join(DOWNLOAD_DIR, filename)
+    if os.path.isfile(file_path):
+        return FileResponse(
+            path=file_path,
+            filename=filename,
+            media_type="application/octet-stream"
+        )
+    raise HTTPException(status_code=404, detail="Файл не найден")
