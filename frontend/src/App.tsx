@@ -211,7 +211,7 @@ const App = () => {
 		try {
 			setLoading(true)
 			setCompleted(false)
-			await axios.post(
+			const response = await axios.post(
 				'/api/download_video/',
 				new URLSearchParams({
 					url,
@@ -219,6 +219,7 @@ const App = () => {
 					download_audio: downloadAudio.toString(),
 				})
 			)
+			const { file_name, download_path } = response.data;
 
 			setProgress(0)
 			setMessage('Download started...')
