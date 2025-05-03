@@ -238,7 +238,8 @@ const App = () => {
 					setLoading(false)
 					setCompleted(true)
 					toast.success(t.downloadComplete)
-					window.location.href = `/download/${file_name}`; 
+					const fileUrl = `/download/${encodeURIComponent(file_name)}`;
+					window.open(fileUrl, '_blank');
 				} else if (data.progress === -1) {
 					socket.close()
 					setLoading(false)
