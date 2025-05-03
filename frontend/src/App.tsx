@@ -238,11 +238,16 @@ const App = () => {
 					setLoading(false)
 					setCompleted(true)
 					toast.success(t.downloadComplete)
-					if (data.filename) {
-						const encodedFileName = encodeURIComponent(data.filename)
-						const downloadUrl = `/download/${encodedFileName}`
-						window.open(downloadUrl, '_blank')  // <-- Открываем вкладку и инициируем загрузку
-					}
+					const encodedFileName = encodeURIComponent(data.filename)
+	const downloadUrl = `/download/${encodedFileName}`
+
+	// Создаём временную ссылку и запускаем скачивание
+	const link = document.createElement('a')
+	link.href = downloadUrl
+	link.setAttribute('download', data.filename) // Это подсказывает браузеру сохранить файл
+	document.body.appendChild(link)
+	link.click()
+	document.body.removeChild(link)
 				} else if (data.progress === -1) {
 					socket.close()
 					setLoading(false)
