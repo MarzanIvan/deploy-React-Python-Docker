@@ -135,6 +135,7 @@ async def download_video(
             elif d['status'] == 'finished':
                 download_progress['progress'] = 100
                 download_progress['message'] = "Успешно загружено"
+                download_progress['filename'] = os.path.basename(video_file)
 
         try:
             update_yt_dlp()
