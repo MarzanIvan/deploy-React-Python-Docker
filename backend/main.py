@@ -183,7 +183,7 @@ async def download_video(
                 with YoutubeDL(audio_opts) as ydl:
                     ydl.download([url])
                     audio_file = os.path.join(DOWNLOAD_DIR, f"{info['title']}_{info['timestamp']}_audio.{info['ext']}")
-
+                    download_progress['filename'] = os.path.basename(audio_file)
                 output_file = os.path.join(DOWNLOAD_DIR, f"final_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
                 download_progress['filename'] = os.path.basename(output_file)
 
