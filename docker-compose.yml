@@ -30,7 +30,7 @@ services:
       - ./downloads:/root/Downloads
     environment:
       - COOKIE_DB_PATH=/home/root/.mozilla/firefox/guest/cookies.sqlite
-    mem_limit: 1024m
+    mem_limit: 2024m
     mem_reservation: 256m
     restart: always
 
