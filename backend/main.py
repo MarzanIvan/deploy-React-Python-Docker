@@ -7,9 +7,11 @@ from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, We
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-from fastapi.responses import FileResponse
 from fastapi import Request
 from urllib.parse import unquote
+from fastapi import BackgroundTasks, Path
+
+from fastapi.responses import FileResponse
 from fastapi import BackgroundTasks, Path
 
 # Импортируем компонент счётчика
@@ -185,7 +187,7 @@ async def download_video(
 
 
 @app.get("/download/{filename}")
-async def download_file(filename: str = Path(...), background_tasks: BackgroundTasks):
+async def download_file(background_tasks: BackgroundTasks, filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
