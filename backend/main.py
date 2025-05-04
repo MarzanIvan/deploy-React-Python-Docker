@@ -146,7 +146,8 @@ async def download_video(
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
-                "cookiefile": "cookies.txt"
+                "cookiefile": "cookies.txt",
+                "download-archive": "..."
             }
 
             audio_opts = {
@@ -154,7 +155,8 @@ async def download_video(
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
-                "cookiefile": "cookies.txt"
+                "cookiefile": "cookies.txt",
+                "download-archive": "..."
             }
 
             video_file, audio_file = None, None
