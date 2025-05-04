@@ -188,7 +188,7 @@ async def download_video(
 
 
 
-DOWNLOAD_DIR = "/root/Downloads"  # или твой путь
+DOWNLOAD_DIR = "/root/Downloads/"  # или твой путь
 
 def delete_file(path: str):
     try:
