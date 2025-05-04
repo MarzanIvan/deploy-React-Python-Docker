@@ -232,22 +232,23 @@ const App = () => {
 				const data = JSON.parse(event.data)
 				setProgress(data.progress)
 				setMessage(`${data.message} (${data.progress.toFixed(2)}%)`)
-
 				if (data.progress >= 100 || data.completed) {
 					socket.close()
 					setLoading(false)
 					setCompleted(true)
+					console.log(data)
 					toast.success(t.downloadComplete)
-					const encodedFileName = encodeURIComponent(data.filename)
-	const downloadUrl = `/download/${encodedFileName}`
-
-	// Создаём временную ссылку и запускаем скачивание
-	const link = document.createElement('a')
-	link.href = downloadUrl
-	link.setAttribute('download', data.filename) // Это подсказывает браузеру сохранить файл
-	document.body.appendChild(link)
-	link.click()
-	document.body.removeChild(link)
+					
+					if (data.filename) {
+						const encodedFileName = encodeURIComponent(data.filename)
+						const downloadUrl = `/download/${encodedFileName}`
+						const a = document.createElement('a')
+						a.href = downloadUrl
+						a.download = ''
+						document.body.appendChild(a)
+						a.click()
+						document.body.removeChild(a)
+					}
 				} else if (data.progress === -1) {
 					socket.close()
 					setLoading(false)
