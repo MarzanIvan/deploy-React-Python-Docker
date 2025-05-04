@@ -186,18 +186,32 @@ async def download_video(
 
 
 
-@app.get("/download/{filename}")
-async def download_file(background_tasks: BackgroundTasks, filename: str = Path(...)):
+DOWNLOAD_DIR = "/root/Downloads"  # или твой путь
+
+def delete_file(path: str):
+    try:
+        os.remove(path)
+        print(f"Удалён файл: {path}")
+    except Exception as e:
+        print(f"Ошибка при удалении файла: {e}")
+
+from fastapi.responses import FileResponse
+from fastapi import BackgroundTasks, APIRouter, HTTPException
+import os
+
+router = APIRouter()
+
+@router.get("/download/{filename}")
+async def download_file(background_tasks: BackgroundTasks, filename: str):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="Файл не найден")
 
-    # Планируем удаление файла после ответа клиенту
-    background_tasks.add_task(os.remove, file_path)
+    background_tasks.add_task(delete_file, file_path)
 
     return FileResponse(
-        file_path,
+        path=file_path,
         filename=filename,
         media_type='application/octet-stream'
     )
