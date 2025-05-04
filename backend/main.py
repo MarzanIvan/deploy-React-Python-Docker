@@ -109,7 +109,6 @@ async def video_info(url: str = Form(...)):
     video_info = get_video_info(url)
 
     if (video_info):
-        # Очистка каталога /root/Downloads
         downloads_dir = "/root/Downloads"
         for filename in os.listdir(downloads_dir):
             file_path = os.path.join(downloads_dir, filename)
@@ -223,8 +222,6 @@ async def download_file(background_tasks: BackgroundTasks, filename: str):
 
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="Файл не найден")
-
-    background_tasks.add_task(delete_file, file_path)
 
     return FileResponse(
         path=file_path,
