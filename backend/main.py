@@ -183,7 +183,7 @@ async def download_video(
                 with YoutubeDL(audio_opts) as ydl:
                     ydl.download([url])
                     audio_file = os.path.join(DOWNLOAD_DIR, f"{info['title']}_{info['timestamp']}_audio.{info['ext']}")
-                    download_progress['filename'] = os.path.basename(audio_file)
+                    
                 output_file = os.path.join(DOWNLOAD_DIR, f"final_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
                 download_progress['filename'] = os.path.basename(output_file)
 
@@ -221,7 +221,7 @@ async def download_file(background_tasks: BackgroundTasks, filename: str):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
-        raise HTTPException(status_code=404, detail="Файл не найден")
+        raise HTTPException(status_code=404, detail="Your file not found")
 
     return FileResponse(
         path=file_path,
