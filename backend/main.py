@@ -63,28 +63,36 @@ def update_yt_dlp():
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении yt-dlp: {e}")
 
-# Функция получения информации о видео
+
 def get_video_info(url: str):
     try:
         ydl_opts = {
             "quiet": True,
             "cookiefile": "cookies.txt"
-        }  # Указываем cookies здесь}
+        }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            formats = [{
-                "format_id": f["format_id"],
-                "quality": f.get("format_note", "N/A"),
-                "ext": f["ext"],
-                "resolution": f.get("height", "N/A"),
-                "vcodec": f.get("vcodec", "none"),
-                "type": "Audio" if f.get("vcodec", "none") == "none" else "Video"
-            } for f in info["formats"]]
             
-            return {"title": info["title"], "formats": formats}
+            # Фильтруем только форматы, у которых есть URL
+            formats = [
+                {
+                    "format_id": f["format_id"],
+                    "quality": f.get("format_note", "N/A"),
+                    "ext": f["ext"],
+                    "resolution": f.get("height", "N/A"),
+                    "vcodec": f.get("vcodec", "none"),
+                    "type": "Audio" if f.get("vcodec", "none") == "none" else "Video"
+                }
+                for f in info["formats"]
+                if f.get("url")  # <-- Только реально доступные форматы
+            ]
+            
+            return {"title": info.get("title", "N/A"), "formats": formats}
     except Exception as e:
         logger.error(f"Error fetching video info: {e}")
         return None
+
+
 import os
 import shutil
 
