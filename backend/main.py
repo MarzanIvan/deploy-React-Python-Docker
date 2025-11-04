@@ -148,7 +148,7 @@ async def download_video(
             update_yt_dlp()
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
-                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_video.%(ext)s"),
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(timestamp)s_video.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
                 "cookiefile": "cookies.txt",
@@ -157,7 +157,7 @@ async def download_video(
 
             audio_opts = {
                 "format": "bestaudio",
-                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title)s_%(timestamp)s_audio.%(ext)s"),
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(timestamp)s_audio.%(ext)s"),
                 "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
                 "cookiefile": "cookies.txt",
