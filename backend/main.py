@@ -191,10 +191,6 @@ async def download_video(
     background_tasks.add_task(download_task, url, video_format_id, download_audio)
     return {"message": "Загрузка началась в фоне. Пожалуйста, ожидайте."}
 
-
-
-DOWNLOAD_DIR = "/root/Downloads"  # или твой путь
-
 def delete_file(path: str):
     try:
         os.remove(path)
