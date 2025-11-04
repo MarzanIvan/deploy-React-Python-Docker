@@ -63,56 +63,9 @@ def update_yt_dlp():
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении yt-dlp: {e}")
 
-def load_cookies_from_db(cookie_db_path):
-    cookies = []
-    try:
-        conn = sqlite3.connect(cookie_db_path)
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT name, value, domain FROM moz_cookies")
-        rows = cursor.fetchall()
-
-        for row in rows:
-            cookies.append(f"{row[0]}={row[1]}; domain={row[2]}")
-
-        conn.close()
-    except Exception as e:
-        logger.error(f"Ошибка при загрузке cookies: {e}")
-    
-    return cookies
-
-def export_cookies_from_firefox():
-    """Экспортирует cookies из профиля Firefox в формате Netscape для yt-dlp."""
-    try:
-        if not os.path.exists(COOKIE_DB_PATH):
-            logger.warning("Файл cookies.sqlite не найден — используется cookies.txt, если он есть.")
-            return False
-
-        conn = sqlite3.connect(COOKIE_DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT host, path, isSecure, expiry, name, value FROM moz_cookies")
-        rows = cursor.fetchall()
-
-        with open(COOKIE_TXT_PATH, "w", encoding="utf-8") as f:
-            f.write("# Netscape HTTP Cookie File\n")
-            for host, path, isSecure, expiry, name, value in rows:
-                secure_flag = "TRUE" if isSecure else "FALSE"
-                f.write(f"{host}\tTRUE\t{path}\t{secure_flag}\t{expiry}\t{name}\t{value}\n")
-
-        conn.close()
-        logger.info(f"Cookies экспортированы из Firefox в {COOKIE_TXT_PATH}")
-        return True
-    except Exception as e:
-        logger.error(f"Ошибка при экспорте cookies: {e}")
-        return False
-
-
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
-        cookies_ready = export_cookies_from_firefox()
-        if not cookies_ready and not os.path.exists(COOKIE_TXT_PATH):
-            logger.warning("Файл cookies не найден. yt-dlp может запросить вход в аккаунт.")
         ydl_opts = {
             "quiet": True,
             "cookiefile": "cookies.txt"

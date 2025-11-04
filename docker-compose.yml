@@ -28,6 +28,7 @@ services:
     volumes:
       - /home/root/.mozilla/firefox/guest:/root/.mozilla/firefox:ro  # Мон
       - ./downloads:/root/Downloads
+      - ./cookies.txt:/app/cookies.txt:ro
     environment:
       - COOKIE_DB_PATH=/home/root/.mozilla/firefox/guest/cookies.sqlite
     mem_limit: 2024m
