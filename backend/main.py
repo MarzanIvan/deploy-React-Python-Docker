@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 # Указываем путь к FFmpeg
 FFMPEG_PATH = r"/usr/bin/ffmpeg"
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
+COOKIE_DB_PATH = "/home/root/.mozilla/firefox/guest/cookies.sqlite"
+COOKIE_TXT_PATH = "cookies.txt"
 
 # Проверка наличия FFmpeg
 if not os.path.isfile(FFMPEG_PATH):
@@ -79,9 +81,38 @@ def load_cookies_from_db(cookie_db_path):
     
     return cookies
 
+def export_cookies_from_firefox():
+    """Экспортирует cookies из профиля Firefox в формате Netscape для yt-dlp."""
+    try:
+        if not os.path.exists(COOKIE_DB_PATH):
+            logger.warning("Файл cookies.sqlite не найден — используется cookies.txt, если он есть.")
+            return False
+
+        conn = sqlite3.connect(COOKIE_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT host, path, isSecure, expiry, name, value FROM moz_cookies")
+        rows = cursor.fetchall()
+
+        with open(COOKIE_TXT_PATH, "w", encoding="utf-8") as f:
+            f.write("# Netscape HTTP Cookie File\n")
+            for host, path, isSecure, expiry, name, value in rows:
+                secure_flag = "TRUE" if isSecure else "FALSE"
+                f.write(f"{host}\tTRUE\t{path}\t{secure_flag}\t{expiry}\t{name}\t{value}\n")
+
+        conn.close()
+        logger.info(f"Cookies экспортированы из Firefox в {COOKIE_TXT_PATH}")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка при экспорте cookies: {e}")
+        return False
+
+
 # Функция получения информации о видео
 def get_video_info(url: str):
     try:
+        cookies_ready = export_cookies_from_firefox()
+        if not cookies_ready and not os.path.exists(COOKIE_TXT_PATH):
+            logger.warning("Файл cookies не найден. yt-dlp может запросить вход в аккаунт.")
         ydl_opts = {
             "quiet": True,
             "cookiefile": "cookies.txt"
