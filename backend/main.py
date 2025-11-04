@@ -33,7 +33,7 @@ if not os.path.isfile(FFMPEG_PATH):
     raise RuntimeError("FFmpeg не найден. Убедитесь, что FFmpeg установлен и путь указан правильно.")
 
 # Папка загрузок
-DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
+DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "/Downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 # Создаём FastAPI приложение
