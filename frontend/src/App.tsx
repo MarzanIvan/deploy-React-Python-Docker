@@ -156,12 +156,15 @@ const App = () => {
 	const t = translations[language]
 
 	useEffect(() => {
-		const savedTheme = localStorage.getItem('theme')
-		if (savedTheme === 'dark') {
-			setIsDarkMode(true)
-			document.body.classList.add('dark-theme')
+		if (typeof window !== 'undefined' && window.localStorage) {
+			const savedTheme = window.localStorage.getItem('theme')
+			if (savedTheme === 'dark') {
+				setIsDarkMode(true)
+				document.body.classList.add('dark-theme')
+			}
 		}
 	}, [])
+	
 
 	const toggleTheme = () => {
 		setIsDarkMode(prevMode => {
