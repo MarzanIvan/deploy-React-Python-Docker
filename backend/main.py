@@ -202,6 +202,19 @@ from fastapi.responses import FileResponse
 from fastapi import BackgroundTasks, APIRouter, HTTPException
 import os
 
+@app.post("/download/{filename:path}")
+async def download_file(filename: str = Path(...)):
+    file_path = os.path.join(DOWNLOAD_DIR, filename)
+
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail=f"File not found{file_path}")
+
+    return FileResponse(
+        path=file_path,
+        filename=os.path.basename(file_path),
+        media_type='application/octet-stream'
+    )
+'''
 router = APIRouter()
 @router.get("/download/{filename:path}")
 async def download_file(filename: str = Path(...)):
@@ -215,3 +228,4 @@ async def download_file(filename: str = Path(...)):
         filename=os.path.basename(file_path),
         media_type='application/octet-stream'
     )
+'''
