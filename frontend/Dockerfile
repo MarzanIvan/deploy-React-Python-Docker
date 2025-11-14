@@ -1,4 +1,4 @@
-FROM node:alpine AS build
+FROM node:24-alpine AS build
 
 COPY package.json package.json
 RUN rm -rf node_modules
