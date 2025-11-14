@@ -170,9 +170,13 @@ const App = () => {
 		setIsDarkMode(prevMode => {
 			const newMode = !prevMode
 			if (newMode) {
-				localStorage.setItem('theme', 'dark')
+				if (typeof window !== 'undefined' && window.localStorage) {
+					localStorage.setItem('theme', 'dark')
+				}
 			} else {
-				localStorage.setItem('theme', 'light')
+				if (typeof window !== 'undefined' && window.localStorage) {
+					localStorage.setItem('theme', 'light')
+				}
 			}
 			document.body.classList.toggle('dark-theme', newMode)
 			return newMode
