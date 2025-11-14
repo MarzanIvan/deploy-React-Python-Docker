@@ -201,6 +201,7 @@ def delete_file(path: str):
 from fastapi.responses import FileResponse
 from fastapi import BackgroundTasks, APIRouter, HTTPException
 import os
+from download_router import router as download_router
 
 router = APIRouter()
 @router.get("/download/{filename:path}")
@@ -208,7 +209,7 @@ async def download_file(filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
-        raise HTTPException(status_code=404, detail="File not found{file_path}")
+        raise HTTPException(status_code=404, detail=f"File not found{file_path}")
 
     return FileResponse(
         path=file_path,
