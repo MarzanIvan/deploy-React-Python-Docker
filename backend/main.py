@@ -202,7 +202,7 @@ from fastapi.responses import FileResponse
 from fastapi import BackgroundTasks, APIRouter, HTTPException
 import os
 
-@app.post("/download/{filename:path}")
+@app.get("/download/{filename:path}")
 async def download_file(filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
