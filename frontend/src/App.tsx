@@ -486,6 +486,44 @@ const App = () => {
 						</p>
 					</div>
 				</section>
+				<section id="cookies" className="cookies">
+	<div className="container">
+		<h3 className="section-title">Upload cookies.txt</h3>
+
+		<p>Upload your cookies.txt file to update parsing/authentication settings.</p>
+
+		<input
+			type="file"
+			accept=".txt"
+			onChange={async (e) => {
+				const file = e.target.files?.[0];
+				if (!file) return;
+
+				const formData = new FormData();
+				formData.append("file", file);
+
+				try {
+					const res = await fetch("https://videovault.ru/api/update_cookies/", {
+						method: "POST",
+						body: formData,
+					});
+
+					const data = await res.json();
+					alert(data.message || "Uploaded!");
+				} catch (error) {
+					alert("Upload failed");
+					console.error(error);
+				}
+			}}
+			style={{ marginTop: "10px" }}
+		/>
+
+		<p style={{ marginTop: "10px", fontSize: "14px", opacity: 0.7 }}>
+			File will be uploaded directly to the server container.
+		</p>
+	</div>
+</section>
+
 			</main>
 
 			<footer className='footer'>
