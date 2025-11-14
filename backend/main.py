@@ -3,16 +3,16 @@ import os
 import subprocess
 import asyncio
 import sqlite3
-from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect, BackgroundTasks, Path,APIRouter
+from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect, BackgroundTasks, Path, APIRouter
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from fastapi import Request
 from fastapi.responses import FileResponse
 from urllib.parse import unquote
-from fastapi import BackgroundTasks, Path
 
 
+import os
 
 # Импортируем компонент счётчика
 from counter import counter_app
@@ -206,10 +206,7 @@ async def download_file(filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
-        raise HTTPException(
-            status_code=404, 
-            detail="File not found{file_path}"
-        )
+        raise HTTPException(status_code=404, detail="File not found{file_path}")
 
     return FileResponse(
         path=file_path,
