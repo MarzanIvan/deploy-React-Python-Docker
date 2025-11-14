@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 FFMPEG_PATH = r"/usr/bin/ffmpeg"
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
 COOKIE_DB_PATH = "/home/root/.mozilla/firefox/guest/cookies.sqlite"
-COOKIE_TXT_PATH = "cookies.txt"
 
 # Проверка наличия FFmpeg
 if not os.path.isfile(FFMPEG_PATH):
@@ -95,6 +94,25 @@ def get_video_info(url: str):
 
 import os
 import shutil
+
+from fastapi import UploadFile, File
+
+COOKIE_TXT_PATH = "/cookies.txt"  # Абсолютный путь в контейнере
+
+@app.post("/update_cookies/")
+async def update_cookies(file: UploadFile = File(...)):
+    try:
+        # Читаем файл из запроса
+        content = await file.read()
+
+        # Перезаписываем cookies.txt
+        with open(COOKIE_TXT_PATH, "wb") as f:
+            f.write(content)
+
+        return {"status": "success", "message": "cookies.txt updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update cookies: {e}")
+
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
