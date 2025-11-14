@@ -198,7 +198,9 @@ def delete_file(path: str):
     except Exception as e:
         print(f"Ошибка при удалении файла: {e}")
 
-
+from fastapi.responses import FileResponse
+from fastapi import BackgroundTasks, APIRouter, HTTPException
+import os
 
 router = APIRouter()
 @router.get("/download/{filename:path}")
