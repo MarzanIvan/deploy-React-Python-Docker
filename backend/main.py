@@ -201,7 +201,6 @@ def delete_file(path: str):
 from fastapi.responses import FileResponse
 from fastapi import BackgroundTasks, APIRouter, HTTPException
 import os
-from download_router import router as download_router
 
 router = APIRouter()
 @router.get("/download/{filename:path}")
