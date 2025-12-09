@@ -149,7 +149,7 @@ class DownloadQueue:
             self.active_tasks.pop(task_id, None)
             self.task_status.pop(task_id, None)
             
-            # Удаляем WebSocket соединения
+            # Закрываем WebSocket соединения этой задачи
             if task_id in self.websocket_connections:
                 for ws in self.websocket_connections[task_id]:
                     try:
@@ -157,13 +157,21 @@ class DownloadQueue:
                     except:
                         pass
                 del self.websocket_connections[task_id]
-            
-            # Обновляем позиции в очереди
+
+            # **Обновляем позиции всех оставшихся задач**
             for i, (tid, _) in enumerate(self.queue.items()):
                 if tid in self.task_status:
                     self.task_status[tid]['position'] = i + 1
-                    # Уведомляем об изменении позиции
-                    await self.update_task_status(tid)
+                    self.task_status[tid]['message'] = 'В очереди'  # Обновляем сообщение
+                    # Отправляем WS уведомление
+                    if tid in self.websocket_connections:
+                        status_snapshot = dict(self.task_status[tid])
+                        for ws in list(self.websocket_connections[tid]):
+                            try:
+                                await ws.send_json(status_snapshot)
+                            except:
+                                self.websocket_connections[tid].remove(ws)
+
     async def _update_queue_positions(self):
         """Обновляет позиции всех задач в очереди и уведомляет WS"""
         async with self.lock:
