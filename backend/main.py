@@ -503,48 +503,46 @@ async def download_video(
     download_audio: bool = Form(False),
 ):
     try:
-        # Получаем информацию о видео
         video_info = get_video_info(url)
         if not video_info:
             raise HTTPException(status_code=400, detail="Не удалось получить информацию о видео")
         
-        # Проверяем, что формат существует
         formats = video_info.get("formats", [])
         format_ids = [f.get("format_id") for f in formats]
+        
         if video_format_id not in format_ids:
             raise HTTPException(status_code=400, detail="Выбранный формат недоступен")
 
-        # Ищем выбранный формат
+        # Находим выбранный формат
         selected_format = next(f for f in formats if f.get("format_id") == video_format_id)
 
-        # Достаём размер файла
+        # Пытаемся получить размер
         file_size = selected_format.get("filesize") or selected_format.get("filesize_approx")
 
-        # === 🔥 Проверка размера файла ===
-        if file_size is None:
-            raise HTTPException(
-                status_code=413,
-                detail="Размер файла неизвестен. Невозможно скачать."
-            )
+        print("FORMAT:", json.dumps(selected_format, indent=2, ensure_ascii=False))
+        print("FILE SIZE:", file_size)
 
-        if file_size > MAX_FILE_SIZE:
+        # Если размер известен → проверяем лимит
+        if file_size is not None and file_size > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=413,
                 detail=(
-                    f"Файл слишком большой: {file_size / (1024**3):.2f} ГБ. "
-                    f"Максимально разрешено: {MAX_FILE_SIZE / (1024**3):.2f} ГБ."
+                    f"Файл слишком большой ({file_size / (1024**3):.2f} ГБ). "
+                    f"Максимум: {MAX_FILE_SIZE / (1024**3):.2f} ГБ."
                 )
             )
 
-        # Добавляем в очередь
+        # Если размер неизвестен → разрешаем
+        expected_size = file_size if file_size is not None else -1 
+
         task_info = await download_queue.add_task({
             "url": url,
             "video_format_id": video_format_id,
             "download_audio": download_audio,
             "requested_at": datetime.now(),
-            "expected_size": file_size
+            "expected_size": expected_size
         })
-
+        
         return {
             "task_id": task_info["task_id"],
             "queue_position": task_info["queue_position"],
