@@ -207,9 +207,119 @@ const App = () => {
 			setIsInfoPending(false)
 		}
 	}
-	
 
 	const handleDownload = async () => {
+		if (!videoFormatId) {
+			toast.error('Please select a video format.')
+			return
+		}
+	
+		try {
+			// Сбрасываем состояние загрузки
+			setLoading(true)
+			setCompleted(false)
+			setProgress(0)
+			setMessage('Добавляем в очередь...')
+			
+			// Отправляем запрос на создание задачи
+			const response = await axios.post(
+				'/api/download_video/',
+				new URLSearchParams({
+					url,
+					video_format_id: videoFormatId,
+					download_audio: downloadAudio.toString(),
+				})
+			)
+	
+			const { task_id, queue_position } = response.data
+	
+			// Если есть очередь, показываем позицию
+			if (queue_position > 1) {
+				setMessage(`Вы в очереди. Позиция: ${queue_position}`)
+				toast.info(`Вы в очереди. Ваша позиция: ${queue_position}`)
+			} else {
+				setMessage('Начинаем загрузку...')
+				toast.info('Загрузка начинается...')
+			}
+	
+			// Подключаемся к WebSocket
+			const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+			const socketUrl = `${protocol}//${window.location.host}/queuesocket/${task_id}`
+			const socket = new WebSocket(socketUrl)
+	
+			socket.onopen = () => {
+				console.log('WebSocket connected for task:', task_id)
+			}
+	
+			socket.onmessage = function (event) {
+				try {
+					const data = JSON.parse(event.data)
+					
+					// Обновляем прогресс
+					setProgress(data.progress)
+					
+					// Обновляем сообщение в зависимости от статуса
+					if (data.position > 1) {
+						setMessage(`В очереди. Позиция: ${data.position}`)
+					} else if (data.progress > 0 && data.progress < 100) {
+						setMessage(`${data.message} (${data.progress.toFixed(2)}%)`)
+					} else {
+						setMessage(data.message)
+					}
+	
+					// Обработка завершения
+					if (data.progress >= 100 && data.completed) {
+						socket.close()
+						setLoading(false)
+						setCompleted(true)
+						toast.success('Загрузка завершена!')
+						
+						// Скачиваем файл
+						if (data.filename) {
+							// Ждем 1 секунду для гарантии сохранения файла
+							setTimeout(() => {
+								const encodedFileName = encodeURIComponent(data.filename)
+								const downloadUrl = `/download/${encodedFileName}`
+								window.open(downloadUrl, '_blank')
+							}, 1000)
+						}
+					}
+					
+					// Обработка ошибки
+					if (data.progress === -1 || data.error) {
+						socket.close()
+						setLoading(false)
+						setMessage(data.message || 'Ошибка загрузки')
+						toast.error(data.message || 'Ошибка загрузки. Попробуйте другой формат.')
+					}
+					
+				} catch (error) {
+					console.error('Error parsing WebSocket message:', error)
+				}
+			}
+	
+			socket.onerror = function (error) {
+				console.error('WebSocket error:', error)
+				toast.error('Ошибка подключения. Попробуйте еще раз.')
+				setLoading(false)
+			}
+	
+			socket.onclose = function () {
+				console.log('WebSocket disconnected')
+			}
+	
+		} catch (error) {
+			setLoading(false)
+			if (error.response?.status === 429) {
+				toast.error('Слишком много запросов. Попробуйте позже.')
+			} else {
+				toast.error('Ошибка при запуске загрузки. Попробуйте еще раз.')
+			}
+			console.error(error)
+		}
+	}
+
+	const handleDownloa = async () => {
 		if (!videoFormatId) {
 			toast.error('Please select a video format.')
 			return
