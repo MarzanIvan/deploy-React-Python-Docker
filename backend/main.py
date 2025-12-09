@@ -494,7 +494,24 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
     finally:
         await download_queue.remove_websocket_connection(task_id, websocket)
 
-MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024  # 3 GB
+MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024  # 3 ГБ
+
+def extract_format_size(fmt: dict) -> int | None:
+    """Возвращает filesize для формата (точный или approximate)"""
+    return fmt.get("filesize") or fmt.get("filesize_approx")
+
+def calculate_total_dash_size(video_format: dict) -> int | None:
+    """
+    Считает общий размер DASH (video + audio), как делает yt-dlp:
+    %(requested_formats.0.filesize + requested_formats.1.filesize)d
+    """
+    # Если формат НЕ DASH — просто берём filesize
+    if not video_format.get("acodec") == "none":
+        return extract_format_size(video_format)
+
+    # DASH → нужно искать аудио отдельно
+    return None  # вычислим ниже в основном коде
+
 
 @app.post("/download_video/")
 async def download_video(
@@ -506,46 +523,68 @@ async def download_video(
         video_info = get_video_info(url)
         if not video_info:
             raise HTTPException(status_code=400, detail="Не удалось получить информацию о видео")
-        
+
         formats = video_info.get("formats", [])
-        format_ids = [f.get("format_id") for f in formats]
-        
-        if video_format_id not in format_ids:
+
+        # Проверяем наличие ID
+        if video_format_id not in [f.get("format_id") for f in formats]:
             raise HTTPException(status_code=400, detail="Выбранный формат недоступен")
 
         # Находим выбранный формат
         selected_format = next(f for f in formats if f.get("format_id") == video_format_id)
 
-        # Пытаемся получить размер
-        file_size = selected_format.get("filesize") or selected_format.get("filesize_approx")
+        # -----------------------------------------------
+        # 🔥 ШАГ 1 — Определяем размер
+        # -----------------------------------------------
 
-        print("FORMAT:", json.dumps(selected_format, indent=2, ensure_ascii=False))
-        print("FILE SIZE:", file_size)
+        # 1) Если формат не DASH → проверяем filesize напрямую
+        video_size = extract_format_size(selected_format)
 
-        # Если размер известен → проверяем лимит
-        if file_size is not None and file_size > MAX_FILE_SIZE:
+        total_size = video_size  # по умолчанию
+
+        # 2) Если DASH → ищем аудио формат
+        if selected_format.get("acodec") == "none":
+            # Находим лучший аудио формат как yt-dlp делает
+            audio_formats = [f for f in formats if f.get("acodec") != "none" and f.get("vcodec") == "none"]
+            
+            # Берём лучший аудио формат
+            if audio_formats:
+                audio_format = max(audio_formats, key=lambda x: extract_format_size(x) or 0)
+                audio_size = extract_format_size(audio_format)
+            else:
+                audio_size = None
+
+            # Складываем VIDEO + AUDIO как в yt-dlp
+            if video_size is not None and audio_size is not None:
+                total_size = video_size + audio_size
+            else:
+                total_size = None  # неизвестный размер
+
+        # -----------------------------------------------
+        # 🔥 ШАГ 2 — Проверяем размер
+        # -----------------------------------------------
+
+        if total_size is not None and total_size > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=413,
-                detail=(
-                    f"Файл слишком большой ({file_size / (1024**3):.2f} ГБ). "
-                    f"Максимум: {MAX_FILE_SIZE / (1024**3):.2f} ГБ."
-                )
+                detail=f"Формат слишком большой ({total_size / (1024 ** 3):.2f} ГБ). Максимум: 3 ГБ."
             )
 
-        # Если размер неизвестен → разрешаем
-        expected_size = file_size if file_size is not None else -1 
+        # -----------------------------------------------
+        # 🔥 ШАГ 3 — Добавляем задачу в очередь
+        # -----------------------------------------------
 
         task_info = await download_queue.add_task({
-            "url": url,
-            "video_format_id": video_format_id,
-            "download_audio": download_audio,
-            "requested_at": datetime.now(),
-            "expected_size": expected_size
+            'url': url,
+            'video_format_id': video_format_id,
+            'download_audio': download_audio,
+            'requested_at': datetime.now(),
+            'expected_size': total_size if total_size is not None else -1,
         })
-        
+
         return {
-            "task_id": task_info["task_id"],
-            "queue_position": task_info["queue_position"],
+            "task_id": task_info['task_id'],
+            "queue_position": task_info['queue_position'],
             "message": "Задача добавлена в очередь"
         }
 
