@@ -580,13 +580,17 @@ async def download_file(filename: str = Path(...)):
             progress=100
         )
 
-    return StreamingResponse(
-        file_iterator(),
-        media_type="application/octet-stream",
-        headers={
-            "Content-Disposition": f"attachment; filename=\"{filename}\""
-        }
-    )
+    async def file_iterator():
+        try:
+            with open(file_path, "rb") as f:
+                while chunk := f.read(1024 * 1024):
+                    yield chunk
+        finally:
+            # Убираем задачу из очереди после завершения скачки
+            if task_id:
+                await download_queue.remove_task(task_id)
+
+    return StreamingResponse(file_iterator(), media_type="application/octet-stream")
 
 
 
