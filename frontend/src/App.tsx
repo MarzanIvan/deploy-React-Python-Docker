@@ -214,38 +214,38 @@ const App = () => {
 			toast.error('Please select a video format.')
 			return
 		}
-
+	
 		try {
 			setLoading(true)
 			setCompleted(false)
-			const response = await axios.post(
-				'/api/download_video/',
-				new URLSearchParams({
-					url,
-					video_format_id: videoFormatId,
-					download_audio: downloadAudio.toString(),
-				})
-			)
-			const { file_name, download_path } = response.data;
-
+	
+			// Запрос на сервер для добавления в очередь
+			const response = await axios.post('/api/download_video/', new URLSearchParams({
+				url,
+				video_format_id: videoFormatId,
+				download_audio: downloadAudio.toString(),
+			}))
+	
+			const { task_id, queue_position } = response.data
+			setMessage(`Вы в очереди: ${queue_position}...`) // Показываем позицию в очереди
 			setProgress(0)
-			setMessage('Download started...')
-			toast.info('Please wait while your video is being downloaded.')
-
-			// Подключаемся к WebSocket для получения обновлений прогресса
-			const socket = new WebSocket('wss://videovault.ru/socket/')
-
-			socket.onmessage = function (event) {
+			toast.info('Вы добавлены в очередь загрузки. Пожалуйста, ждите.')
+	
+			// Подключаемся к WebSocket для получения прогресса конкретной задачи
+			const socket = new WebSocket(`wss://videovault.ru/ws/${task_id}`)
+	
+			socket.onmessage = function(event) {
 				const data = JSON.parse(event.data)
+	
 				setProgress(data.progress)
 				setMessage(`${data.message} (${data.progress.toFixed(2)}%)`)
-				if (data.progress >= 100 || data.completed) {
+	
+				if (data.progress >= 100) {
 					socket.close()
 					setLoading(false)
 					setCompleted(true)
-					console.log(data)
-					toast.success(t.downloadComplete)
-					
+					toast.success('Загрузка завершена!')
+	
 					if (data.filename) {
 						const encodedFileName = encodeURIComponent(data.filename)
 						const downloadUrl = `/download/${encodedFileName}`
@@ -259,18 +259,19 @@ const App = () => {
 				} else if (data.progress === -1) {
 					socket.close()
 					setLoading(false)
-					toast.error('Download error. Please try a different format.')
+					toast.error('Ошибка загрузки. Попробуйте другой формат.')
 				}
 			}
-
-			socket.onerror = function (error) {
+	
+			socket.onerror = function(error) {
 				socket.close()
 				setLoading(false)
-				toast.error('WebSocket error. Please try again.')
+				toast.error('WebSocket ошибка. Попробуйте снова.')
 			}
+	
 		} catch (error) {
 			setLoading(false)
-			toast.error('Error during download. Please try a different format.')
+			toast.error('Ошибка при отправке запроса на сервер.')
 		}
 	}
 
