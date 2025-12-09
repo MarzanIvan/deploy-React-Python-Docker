@@ -52,6 +52,31 @@ tasks_progress = {}
 task_counter = 0
 
 # =====================
+# Функция получения информации о видео
+# =====================
+def get_video_info(url: str):
+    try:
+        ydl_opts = {"quiet": True, "cookiefile": "cookies.txt"}
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            formats = [
+                {
+                    "format_id": f["format_id"],
+                    "quality": f.get("format_note", "N/A"),
+                    "ext": f["ext"],
+                    "resolution": f.get("height", "N/A"),
+                    "vcodec": f.get("vcodec", "none"),
+                    "type": "Audio" if f.get("vcodec", "none") == "none" else "Video"
+                }
+                for f in info["formats"]
+                if f.get("url")
+            ]
+            return {"title": info.get("title", "N/A"), "formats": formats}
+    except Exception as e:
+        logger.error(f"Error fetching video info: {e}")
+        return None
+
+# =====================
 # Функции для работы с загрузкой
 # =====================
 async def update_yt_dlp():
@@ -62,8 +87,10 @@ async def update_yt_dlp():
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении yt-dlp: {e}")
 
+
 async def yt_download_task(task_id: int, url: str, video_format_id: str, download_audio: bool):
     """Загрузка видео через yt-dlp"""
+
     def progress_hook(d):
         if d['status'] == 'downloading' and 'total_bytes' in d and d['total_bytes']:
             tasks_progress[task_id]['progress'] = d['downloaded_bytes'] / d['total_bytes'] * 100
@@ -140,6 +167,7 @@ async def process_queue():
         finally:
             download_queue.task_done()
 
+
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(process_queue())
@@ -149,9 +177,9 @@ async def startup_event():
 # =====================
 @app.post("/download_video/")
 async def download_video(
-    url: str = Form(...),
-    video_format_id: str = Form(...),
-    download_audio: bool = Form(False),
+        url: str = Form(...),
+        video_format_id: str = Form(...),
+        download_audio: bool = Form(False),
 ):
     global task_counter
     task_id = task_counter
@@ -165,6 +193,7 @@ async def download_video(
     await download_queue.put((task_id, task))
     queue_position = download_queue.qsize()
     return {"task_id": task_id, "queue_position": queue_position}
+
 
 @app.websocket("/queuesocket/{task_id}")
 async def websocket_endpoint(websocket: WebSocket, task_id: int):
@@ -180,12 +209,14 @@ async def websocket_endpoint(websocket: WebSocket, task_id: int):
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for task {task_id}")
 
+
 @app.get("/download/{filename:path}")
 async def download_file(filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
     return FileResponse(path=file_path, filename=os.path.basename(file_path), media_type='application/octet-stream')
+
 
 @app.post("/update_cookies/")
 async def update_cookies(file: UploadFile = File(...)):
