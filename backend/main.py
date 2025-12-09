@@ -262,152 +262,152 @@ def _extract_size(fmt: dict):
 
 
 async def _download_video_task(self, task_id: str, url: str, video_format_id: str, download_audio: bool):
-    """Основная функция загрузки видео"""
+        """Основная функция загрузки видео"""
 
-    def progress_hook(d):
-        if d['status'] == 'downloading':
-            if 'total_bytes' in d and d['total_bytes']:
-                progress = d['downloaded_bytes'] / d['total_bytes'] * 100
+        def progress_hook(d):
+            if d['status'] == 'downloading':
+                if 'total_bytes' in d and d['total_bytes']:
+                    progress = d['downloaded_bytes'] / d['total_bytes'] * 100
+                    asyncio.create_task(
+                        self.update_task_status(
+                            task_id,
+                            progress=max(10, progress * 0.9),
+                            message=f"Загрузка: {progress:.1f}%"
+                        )
+                    )
+            elif d['status'] == 'finished':
                 asyncio.create_task(
                     self.update_task_status(
                         task_id,
-                        progress=max(10, progress * 0.9),
-                        message=f"Загрузка: {progress:.1f}%"
+                        progress=95,
+                        message="Обработка видео..."
                     )
                 )
-        elif d['status'] == 'finished':
-            asyncio.create_task(
-                self.update_task_status(
-                    task_id,
-                    progress=95,
-                    message="Обработка видео..."
-                )
-            )
 
-    try:
-        await self.update_task_status(
-            task_id,
-            progress=10,
-            message="Подготовка к загрузке..."
-        )
-
-        update_yt_dlp()
-
-        # Настройки yt-dlp
-        video_opts = {
-            "format": f"{video_format_id}+bestaudio/best",
-            "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
-            "ffmpeg_location": FFMPEG_PATH,
-            "cookiefile": COOKIE_TXT_PATH,
-            "quiet": True,
-            "no_warnings": True,
-            "progress_hooks": [progress_hook],
-        }
-
-        # Только аудио?
-        if download_audio:
-            video_opts.update({
-                "format": "bestaudio/best",
-                "postprocessors": [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '192',
-                }],
-                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s.%(ext)s"),
-            })
-
-        await self.update_task_status(
-            task_id,
-            progress=15,
-            message="Получение информации о видео..."
-        )
-
-        # Получаем info, но БЕЗ скачивания
-        with YoutubeDL(video_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            formats = info.get("formats", [])
-
-        # ================================
-        # 🔥 Ограничение размера (3GB)
-        # ================================
-        await self.update_task_status(
-            task_id,
-            progress=18,
-            message="Проверка размера..."
-        )
-
-        # Находим выбранный формат
-        selected_fmt = next((f for f in formats if f.get("format_id") == video_format_id), None)
-
-        if not selected_fmt:
-            raise Exception("Формат не найден")
-
-        video_size = _extract_size(selected_fmt)
-        total_size = video_size
-
-        # Если DASH → складываем audio + video
-        if selected_fmt.get("acodec") == "none" and not download_audio:
-            audio_formats = [f for f in formats if f.get("acodec") != "none" and f.get("vcodec") == "none"]
-            if audio_formats:
-                best_audio = max(audio_formats, key=lambda x: _extract_size(x) or 0)
-                audio_size = _extract_size(best_audio)
-                if video_size and audio_size:
-                    total_size = video_size + audio_size
-
-        # Ограничение: нельзя скачивать > 3ГБ
-        if total_size and total_size > MAX_FILE_SIZE:
-            size_gb = total_size / 1024**3
-            raise Exception(f"Размер файла {size_gb:.2f} ГБ превышает лимит 3 ГБ.")
-
-        # ================================
-        # 🔥 Скачивание
-        # ================================
-
-        await self.update_task_status(
-            task_id,
-            progress=20,
-            message="Начинаем загрузку..."
-        )
-
-        with YoutubeDL(video_opts) as ydl:
-            ydl.download([url])
-
-        # Определяем имя файла
-        if download_audio:
-            filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp3"
-        else:
-            files = os.listdir(DOWNLOAD_DIR)
-            matching_files = [f for f in files if info["id"] in f]
-            if matching_files:
-                filename = sorted(
-                    matching_files,
-                    key=lambda x: os.path.getctime(os.path.join(DOWNLOAD_DIR, x)),
-                    reverse=True
-                )[0]
-            else:
-                filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp4"
-
-        filepath = os.path.join(DOWNLOAD_DIR, filename)
-
-        if os.path.exists(filepath):
+        try:
             await self.update_task_status(
                 task_id,
-                progress=100,
-                message="Загрузка завершена!",
-                completed=True,
-                filename=filename
+                progress=10,
+                message="Подготовка к загрузке..."
             )
-        else:
-            raise Exception("Файл не был создан")
 
-    except Exception as e:
-        logger.error(f"Download task error for {task_id}: {e}")
-        await self.update_task_status(
-            task_id,
-            progress=-1,
-            message=f"Ошибка загрузки: {str(e)}",
-            error=True
-        )
+            update_yt_dlp()
+
+            # Настройки yt-dlp
+            video_opts = {
+                "format": f"{video_format_id}+bestaudio/best",
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
+                "ffmpeg_location": FFMPEG_PATH,
+                "cookiefile": COOKIE_TXT_PATH,
+                "quiet": True,
+                "no_warnings": True,
+                "progress_hooks": [progress_hook],
+            }
+
+            # Только аудио?
+            if download_audio:
+                video_opts.update({
+                    "format": "bestaudio/best",
+                    "postprocessors": [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                    "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s.%(ext)s"),
+                })
+
+            await self.update_task_status(
+                task_id,
+                progress=15,
+                message="Получение информации о видео..."
+            )
+
+            # Получаем info, но БЕЗ скачивания
+            with YoutubeDL(video_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                formats = info.get("formats", [])
+
+            # ================================
+            # 🔥 Ограничение размера (3GB)
+            # ================================
+            await self.update_task_status(
+                task_id,
+                progress=18,
+                message="Проверка размера..."
+            )
+
+            # Находим выбранный формат
+            selected_fmt = next((f for f in formats if f.get("format_id") == video_format_id), None)
+
+            if not selected_fmt:
+                raise Exception("Формат не найден")
+
+            video_size = _extract_size(selected_fmt)
+            total_size = video_size
+
+            # Если DASH → складываем audio + video
+            if selected_fmt.get("acodec") == "none" and not download_audio:
+                audio_formats = [f for f in formats if f.get("acodec") != "none" and f.get("vcodec") == "none"]
+                if audio_formats:
+                    best_audio = max(audio_formats, key=lambda x: _extract_size(x) or 0)
+                    audio_size = _extract_size(best_audio)
+                    if video_size and audio_size:
+                        total_size = video_size + audio_size
+
+            # Ограничение: нельзя скачивать > 3ГБ
+            if total_size and total_size > MAX_FILE_SIZE:
+                size_gb = total_size / 1024**3
+                raise Exception(f"Размер файла {size_gb:.2f} ГБ превышает лимит 3 ГБ.")
+
+            # ================================
+            # 🔥 Скачивание
+            # ================================
+
+            await self.update_task_status(
+                task_id,
+                progress=20,
+                message="Начинаем загрузку..."
+            )
+
+            with YoutubeDL(video_opts) as ydl:
+                ydl.download([url])
+
+            # Определяем имя файла
+            if download_audio:
+                filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp3"
+            else:
+                files = os.listdir(DOWNLOAD_DIR)
+                matching_files = [f for f in files if info["id"] in f]
+                if matching_files:
+                    filename = sorted(
+                        matching_files,
+                        key=lambda x: os.path.getctime(os.path.join(DOWNLOAD_DIR, x)),
+                        reverse=True
+                    )[0]
+                else:
+                    filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp4"
+
+            filepath = os.path.join(DOWNLOAD_DIR, filename)
+
+            if os.path.exists(filepath):
+                await self.update_task_status(
+                    task_id,
+                    progress=100,
+                    message="Загрузка завершена!",
+                    completed=True,
+                    filename=filename
+                )
+            else:
+                raise Exception("Файл не был создан")
+
+        except Exception as e:
+            logger.error(f"Download task error for {task_id}: {e}")
+            await self.update_task_status(
+                task_id,
+                progress=-1,
+                message=f"Ошибка загрузки: {str(e)}",
+                error=True
+            )
 
 
 # Глобальный экземпляр менеджера очереди
