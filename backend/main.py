@@ -83,7 +83,7 @@ class DownloadQueue:
                 'error': None,
                 'position': position
             }
-            
+        await self._update_queue_positions()
         # Запускаем воркер, если он не запущен
         if not self.worker_task or self.worker_task.done():
             self.worker_task = asyncio.create_task(self.process_queue())
@@ -163,9 +163,9 @@ class DownloadQueue:
             for i, (tid, _) in enumerate(self.queue.items()):
                 if tid in self.task_status:
                     self.task_status[tid]['position'] = i + 1
-                    # Отправляем WS напрямую, минуя update_task_status, чтобы избежать повторного lock
+                    # Отправляем WebSocket напрямую, минуя update_task_status
                     if tid in self.websocket_connections:
-                        status_snapshot = dict(self.task_status[tid])  # копия
+                        status_snapshot = dict(self.task_status[tid])
                         for ws in list(self.websocket_connections[tid]):
                             try:
                                 await ws.send_json(status_snapshot)
