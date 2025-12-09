@@ -534,6 +534,9 @@ async def get_queue_status():
             "total_tasks": len(download_queue.queue)
         }
 
+from fastapi import BackgroundTasks
+from fastapi.responses import StreamingResponse
+
 @app.get("/download/{filename:path}")
 async def download_file(filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
