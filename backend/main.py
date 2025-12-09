@@ -371,14 +371,6 @@ class DownloadQueue:
                     error=True
                 )
 
-def _extract_size(fmt: dict):
-    """Возвращает filesize или filesize_approx"""
-    return fmt.get("filesize") or fmt.get("filesize_approx")
-
-
-
-
-
 # Глобальный экземпляр менеджера очереди
 download_queue = DownloadQueue(max_concurrent=1)
 
