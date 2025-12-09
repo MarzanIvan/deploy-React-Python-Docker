@@ -166,7 +166,7 @@ async def download_video(
     queue_position = download_queue.qsize()
     return {"task_id": task_id, "queue_position": queue_position}
 
-@app.websocket("/ws/{task_id}")
+@app.websocket("/queuesocket/{task_id}")
 async def websocket_endpoint(websocket: WebSocket, task_id: int):
     await websocket.accept()
     try:
