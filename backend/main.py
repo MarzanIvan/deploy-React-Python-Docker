@@ -173,7 +173,6 @@ class DownloadQueue:
                                 self.websocket_connections[tid].remove(ws)
 
 
-
     async def process_queue(self):
         """Обрабатывает очередь задач"""
         while True:
