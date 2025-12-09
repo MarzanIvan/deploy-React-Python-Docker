@@ -146,6 +146,7 @@ class DownloadQueue:
     async def remove_task(self, task_id: str):
         """Удаляет задачу из системы"""
         async with self.lock:
+            # Удаляем из всех структур
             self.queue.pop(task_id, None)
             self.active_tasks.pop(task_id, None)
             self.task_status.pop(task_id, None)
@@ -158,20 +159,9 @@ class DownloadQueue:
                     except:
                         pass
                 del self.websocket_connections[task_id]
-
-            # **Обновляем позиции всех оставшихся задач**
-            for i, (tid, _) in enumerate(self.queue.items()):
-                if tid in self.task_status:
-                    self.task_status[tid]['position'] = i + 1
-                    self.task_status[tid]['message'] = 'В очереди'  # Обновляем сообщение
-                    # Отправляем WS уведомление
-                    if tid in self.websocket_connections:
-                        status_snapshot = dict(self.task_status[tid])
-                        for ws in list(self.websocket_connections[tid]):
-                            try:
-                                await ws.send_json(status_snapshot)
-                            except:
-                                self.websocket_connections[tid].remove(ws)
+        
+        # ОБЯЗАТЕЛЬНО обновляем позиции остальных задач
+        await self._update_queue_positions()
 
     async def _update_queue_positions(self):
         """Обновляет позиции всех задач в очереди и уведомляет WS"""
@@ -192,35 +182,40 @@ class DownloadQueue:
     async def process_queue(self):
         while True:
             try:
-                if len(self.active_tasks) >= self.max_concurrent:
-                    await asyncio.sleep(1)
-                    continue
-
-                task_id = None
-                task_data = None
-
                 async with self.lock:
+                    # Проверяем, есть ли свободные слоты
+                    if len(self.active_tasks) >= self.max_concurrent:
+                        await asyncio.sleep(1)
+                        continue
+                    
+                    # Находим следующую задачу со статусом 'waiting'
+                    task_id = None
+                    task_data = None
+                    
                     for tid, data in self.queue.items():
-                        if data['status'] == 'waiting':
+                        if tid not in self.active_tasks and data.get('status') == 'waiting':
                             task_id = tid
                             task_data = data
                             break
-
-                await self._update_queue_positions()
-                if not task_id:
-                    await asyncio.sleep(5)
-                    continue
-
-                # Обновляем статус
-                async with self.lock:
+                    
+                    if not task_id:
+                        await asyncio.sleep(1)
+                        continue
+                    
+                    # Обновляем статус задачи
                     self.queue[task_id]['status'] = 'processing'
                     self.active_tasks[task_id] = task_data
-
-                await self.update_task_status(task_id, message='Начинаем загрузку...', progress=5)
-
-                # **Ждем завершения задачи прямо здесь**
-                await self.execute_download_task(task_id, task_data)
-
+                
+                # Обновляем статус для WebSocket
+                await self.update_task_status(
+                    task_id, 
+                    message='Начинаем загрузку...', 
+                    progress=5
+                )
+                
+                # Запускаем задачу в фоне
+                asyncio.create_task(self.execute_download_task(task_id, task_data))
+                
             except Exception as e:
                 logger.error(f"Queue processor error: {e}")
                 await asyncio.sleep(1)
@@ -236,11 +231,9 @@ class DownloadQueue:
                 download_audio=task_data['download_audio']
             )
             
-            # Помечаем как выполненную
-            async with self.lock:
-                if task_id in self.queue:
-                    self.queue[task_id]['status'] = 'completed'
-                    
+            # Ждем 5 секунд после завершения загрузки, чтобы пользователь мог скачать
+            await asyncio.sleep(5)
+            
         except Exception as e:
             logger.error(f"Task execution error: {e}")
             await self.update_task_status(task_id,
@@ -248,13 +241,16 @@ class DownloadQueue:
                 message=f'Ошибка: {str(e)}',
                 error=True
             )
+            # Ждем 5 секунд и перед ошибкой
+            await asyncio.sleep(5)
         finally:
             # Удаляем из активных задач
             async with self.lock:
                 self.active_tasks.pop(task_id, None)
+                # Не удаляем из queue здесь - это сделает remove_task
             
-            # Через 5 минут удаляем задачу из очереди полностью
-            await asyncio.sleep(300)
+            # Удаляем задачу из системы через 60 секунд после завершения
+            await asyncio.sleep(60)
             await self.remove_task(task_id)
     
     async def _download_video_task(self, task_id: str, url: str, video_format_id: str, download_audio: bool):
@@ -565,18 +561,32 @@ async def download_file(filename: str = Path(...)):
         raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
 
     task_id = download_queue.get_task_id_by_filename(filename)
-
+    
     async def file_iterator():
         try:
             with open(file_path, "rb") as f:
                 while chunk := f.read(1024 * 1024):
                     yield chunk
         finally:
-            # Убираем задачу из очереди после завершения скачки
-            if task_id:
-                await download_queue.remove_task(task_id)
+            # НЕ удаляем задачу сразу - она удалится через 60 секунд после завершения
+            # в методе execute_download_task
+            pass
 
-    return StreamingResponse(file_iterator(), media_type="application/octet-stream")
+    # Обновляем статус, что файл скачивается
+    if task_id:
+        await download_queue.update_task_status(
+            task_id,
+            message="Скачивание файла...",
+            progress=100
+        )
+
+    return StreamingResponse(
+        file_iterator(),
+        media_type="application/octet-stream",
+        headers={
+            "Content-Disposition": f"attachment; filename=\"{filename}\""
+        }
+    )
 
 
 
