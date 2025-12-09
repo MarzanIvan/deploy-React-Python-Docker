@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 # Указываем путь к FFmpeg
 FFMPEG_PATH = r"/usr/bin/ffmpeg"
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
-COOKIE_DB_PATH = "/home/root/.mozilla/firefox/guest/cookies.sqlite"
 
 # Проверка наличия FFmpeg
 if not os.path.isfile(FFMPEG_PATH):
