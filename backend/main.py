@@ -111,6 +111,7 @@ class DownloadQueue:
                 'position': 0
             })
     
+
     async def update_task_status(self, task_id: str, **kwargs):
         """Обновляет статус задачи"""
         async with self.lock:
@@ -376,6 +377,23 @@ download_queue = DownloadQueue(max_concurrent=1)
 
 # ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
+# Метод в DownloadQueue для завершения задачи по task_id
+async def finish_task_by_id(self, task_id: str):
+        """Завершает задачу и удаляет её из очереди"""
+        async with self.lock:
+            if task_id in self.task_status:
+                await self.update_task_status(
+                    task_id,
+                    progress=100,
+                    message="Задача завершена",
+                    completed=True
+                )
+            # Убираем задачу
+            await self.remove_task(task_id)
+
+    # Привязываем метод к DownloadQueue
+DownloadQueue.finish_task_by_id = finish_task_by_id
+
 def update_yt_dlp():
     try:
         subprocess.run(["pip", "install", "--upgrade", "yt-dlp", "--quiet"], check=True)
@@ -537,9 +555,10 @@ async def get_queue_status():
 
 from fastapi import BackgroundTasks
 from fastapi.responses import StreamingResponse
+from fastapi import BackgroundTasks
 
 @app.get("/download/{filename:path}")
-async def download_file(filename: str = Path(...)):
+async def download_file(background_tasks: BackgroundTasks, filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
@@ -547,17 +566,20 @@ async def download_file(filename: str = Path(...)):
 
     task_id = download_queue.get_task_id_by_filename(filename)
     
-    async def file_iterator():
-        try:
-            with open(file_path, "rb") as f:
-                while chunk := f.read(1024*1024):
-                    yield chunk
-        finally:
-            # Убираем задачу из очереди после закрытия скачки
-            if task_id:
-                await download_queue.remove_task(task_id)
+    def file_iterator():
+        with open(file_path, "rb") as f:
+            while chunk := f.read(1024 * 1024):
+                yield chunk
+
+    # Убираем задачу из очереди после окончания скачки через background task
+    if task_id:
+        async def remove_task_after_download():
+            await download_queue.remove_task(task_id)
+        
+        background_tasks.add_task(remove_task_after_download)
 
     return StreamingResponse(file_iterator(), media_type="application/octet-stream")
+
 
 
 # ========== СТАРЫЙ МЕТОД (для совместимости) ==========
