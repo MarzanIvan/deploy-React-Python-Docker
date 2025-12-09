@@ -310,11 +310,7 @@ const App = () => {
 	
 		} catch (error) {
 			setLoading(false)
-			if (error.response?.status === 429) {
-				toast.error('Слишком много запросов. Попробуйте позже.')
-			} else {
-				toast.error('Ошибка при запуске загрузки. Попробуйте еще раз.')
-			}
+			toast.error('Error during download. Please try a different format.')
 			console.error(error)
 		}
 	}
