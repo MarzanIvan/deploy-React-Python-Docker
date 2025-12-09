@@ -157,7 +157,16 @@ class DownloadQueue:
                     self.task_status[tid]['position'] = i + 1
                     # Уведомляем об изменении позиции
                     await self.update_task_status(tid)
-    
+    async def _update_queue_positions(self):
+        """Обновляет позиции всех задач в очереди и уведомляет WS"""
+        async with self.lock:
+            for i, (tid, _) in enumerate(self.queue.items()):
+                if tid in self.task_status:
+                    self.task_status[tid]['position'] = i + 1
+                    # Уведомляем WebSocket о позиции
+                    await self.update_task_status(tid)
+
+
     async def process_queue(self):
         """Обрабатывает очередь задач"""
         while True:
@@ -177,7 +186,7 @@ class DownloadQueue:
                             task_id = tid
                             task_data = data
                             break
-                
+                await self._update_queue_positions()
                 if not task_id:
                     # Если очередь пуста, ждем и проверяем снова
                     await asyncio.sleep(5)
