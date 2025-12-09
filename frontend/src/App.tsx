@@ -241,11 +241,8 @@ const App = () => {
 				setMessage('Начинаем загрузку...')
 				toast.info('Загрузка начинается...')
 			}
-	
-			// Подключаемся к WebSocket
-			const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-			const socketUrl = `${protocol}://videovault.ru/queuesocket/${task_id}`
-			const socket = new WebSocket(socketUrl)
+			
+			const socket = new WebSocket(`wss://videovault.ru/queuesocket/${task_id}`)
 	
 			socket.onopen = () => {
 				console.log('WebSocket connected for task:', task_id)
