@@ -163,8 +163,15 @@ class DownloadQueue:
             for i, (tid, _) in enumerate(self.queue.items()):
                 if tid in self.task_status:
                     self.task_status[tid]['position'] = i + 1
-                    # Уведомляем WebSocket о позиции
-                    await self.update_task_status(tid)
+                    # Отправляем WS напрямую, минуя update_task_status, чтобы избежать повторного lock
+                    if tid in self.websocket_connections:
+                        status_snapshot = dict(self.task_status[tid])  # копия
+                        for ws in list(self.websocket_connections[tid]):
+                            try:
+                                await ws.send_json(status_snapshot)
+                            except:
+                                self.websocket_connections[tid].remove(ws)
+
 
 
     async def process_queue(self):
