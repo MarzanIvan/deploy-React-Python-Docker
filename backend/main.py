@@ -237,25 +237,26 @@ class DownloadQueue:
         """Основная функция загрузки видео"""
         
         def progress_hook(d):
+            """Хук для отслеживания прогресса"""
             if d['status'] == 'downloading':
                 if 'total_bytes' in d and d['total_bytes']:
                     progress = d['downloaded_bytes'] / d['total_bytes'] * 100
                     asyncio.create_task(
                         self.update_task_status(
                             task_id,
-                            progress=max(10, progress * 0.9),
+                            progress=max(10, progress * 0.9),  # От 10% до 100%
                             message=f"Загрузка: {progress:.1f}%"
                         )
                     )
             elif d['status'] == 'finished':
-                # Даем yt-dlp полностью завершить postprocessor
                 asyncio.create_task(
                     self.update_task_status(
                         task_id,
-                        progress=90,
-                        message="Файл загружен, завершается обработка..."
+                        progress=95,
+                        message="Обработка видео..."
                     )
                 )
+        
         try:
             # Обновляем статус - начали загрузку
             await self.update_task_status(
@@ -271,7 +272,6 @@ class DownloadQueue:
             video_opts = {
                 "format": f"{video_format_id}+bestaudio/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
-                "progress_hooks": [progress_hook],
                 "ffmpeg_location": FFMPEG_PATH,
                 "cookiefile": COOKIE_TXT_PATH,
                 "quiet": True,
