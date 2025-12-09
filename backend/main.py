@@ -181,48 +181,41 @@ class DownloadQueue:
 
 
     async def process_queue(self):
-        """Обрабатывает очередь задач"""
         while True:
             try:
-                # Проверяем, можем ли запустить новую задачу
                 if len(self.active_tasks) >= self.max_concurrent:
                     await asyncio.sleep(1)
                     continue
-                
-                # Ищем задачу в очереди
+
                 task_id = None
                 task_data = None
-                
+
                 async with self.lock:
                     for tid, data in self.queue.items():
                         if data['status'] == 'waiting':
                             task_id = tid
                             task_data = data
                             break
+
                 await self._update_queue_positions()
                 if not task_id:
-                    # Если очередь пуста, ждем и проверяем снова
                     await asyncio.sleep(5)
                     continue
-                
-                # Обновляем статус задачи
+
+                # Обновляем статус
                 async with self.lock:
                     self.queue[task_id]['status'] = 'processing'
                     self.active_tasks[task_id] = task_data
-                
-                await self.update_task_status(task_id, 
-                    message='Начинаем загрузку...',
-                    progress=5
-                )
-                
-                # Запускаем задачу в отдельном потоке
-                asyncio.create_task(
-                    self.execute_download_task(task_id, task_data)
-                )
-                
+
+                await self.update_task_status(task_id, message='Начинаем загрузку...', progress=5)
+
+                # **Ждем завершения задачи прямо здесь**
+                await self.execute_download_task(task_id, task_data)
+
             except Exception as e:
                 logger.error(f"Queue processor error: {e}")
                 await asyncio.sleep(1)
+
     
     async def execute_download_task(self, task_id: str, task_data: dict):
         """Выполняет задачу загрузки"""
