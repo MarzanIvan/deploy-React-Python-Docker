@@ -558,27 +558,26 @@ from fastapi.responses import StreamingResponse
 from fastapi import BackgroundTasks
 
 @app.get("/download/{filename:path}")
-async def download_file(background_tasks: BackgroundTasks, filename: str = Path(...)):
+async def download_file(filename: str = Path(...)):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
 
     task_id = download_queue.get_task_id_by_filename(filename)
-    
-    def file_iterator():
-        with open(file_path, "rb") as f:
-            while chunk := f.read(1024 * 1024):
-                yield chunk
 
-    # Убираем задачу из очереди после окончания скачки через background task
-    if task_id:
-        async def remove_task_after_download():
-            await download_queue.remove_task(task_id)
-        
-        background_tasks.add_task(remove_task_after_download)
+    async def file_iterator():
+        try:
+            with open(file_path, "rb") as f:
+                while chunk := f.read(1024 * 1024):
+                    yield chunk
+        finally:
+            # Убираем задачу из очереди после завершения скачки
+            if task_id:
+                await download_queue.remove_task(task_id)
 
     return StreamingResponse(file_iterator(), media_type="application/octet-stream")
+
 
 
 
