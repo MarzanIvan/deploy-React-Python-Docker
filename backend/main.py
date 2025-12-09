@@ -92,6 +92,12 @@ class DownloadQueue:
             'task_id': task_id,
             'queue_position': position
         }
+    def get_task_id_by_filename(self, filename: str) -> str | None:
+        """Находит task_id по имени файла"""
+        for task_id, status in self.task_status.items():
+            if status.get('filename') == filename:
+                return task_id
+        return None
     
     async def get_task_status(self, task_id: str) -> dict:
         """Получает статус задачи"""
@@ -527,18 +533,30 @@ async def get_queue_status():
             "total_tasks": len(download_queue.queue)
         }
 
+from fastapi import BackgroundTasks
+from fastapi.responses import StreamingResponse
+
 @app.get("/download/{filename:path}")
-async def download_file(filename: str = Path(...)):
+async def download_file(filename: str, background_tasks: BackgroundTasks):
     file_path = os.path.join(DOWNLOAD_DIR, filename)
 
     if not os.path.isfile(file_path):
-        raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+        raise HTTPException(status_code=404, detail="File not found")
 
-    return FileResponse(
-        path=file_path,
-        filename=os.path.basename(file_path),
-        media_type='application/octet-stream'
-    )
+    async def file_iterator(path):
+        try:
+            with open(path, "rb") as f:
+                while chunk := f.read(1024*1024):  # 1 МБ
+                    yield chunk
+        finally:
+            # Этот блок выполнится если клиент закрыл соединение
+            # Убираем задачу из очереди, если есть
+            task_id = get_task_id_by_filename(filename)  # нужно реализовать
+            if task_id:
+                await download_queue.remove_task(task_id)
+
+    return StreamingResponse(file_iterator(file_path), media_type="application/octet-stream")
+
 
 # ========== СТАРЫЙ МЕТОД (для совместимости) ==========
 
