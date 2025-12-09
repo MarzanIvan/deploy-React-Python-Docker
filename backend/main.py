@@ -573,12 +573,12 @@ async def download_file(filename: str = Path(...)):
             pass
 
     # Обновляем статус, что файл скачивается
-    if task_id:
-        await download_queue.update_task_status(
-            task_id,
-            message="Скачивание файла...",
-            progress=100
-        )
+    #if task_id:
+        #await download_queue.update_task_status(
+            #task_id,
+            #message="Скачивание файла...",
+            #progress=100
+        #)
 
     async def file_iterator():
         try:
@@ -589,6 +589,12 @@ async def download_file(filename: str = Path(...)):
             # Убираем задачу из очереди после завершения скачки
             if task_id:
                 await download_queue.remove_task(task_id)
+            if task_id:
+                await download_queue.update_task_status(
+                    task_id,
+                    message="Скачивание файла...",
+                    progress=100
+                )
 
     return StreamingResponse(file_iterator(), media_type="application/octet-stream")
 
