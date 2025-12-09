@@ -271,14 +271,15 @@ const App = () => {
 						setCompleted(true)
 						toast.success('Загрузка завершена!')
 						
-						// Скачиваем файл
 						if (data.filename) {
-							// Ждем 1 секунду для гарантии сохранения файла
-							setTimeout(() => {
-								const encodedFileName = encodeURIComponent(data.filename)
-								const downloadUrl = `/download/${encodedFileName}`
-								window.open(downloadUrl, '_blank')
-							}, 1000)
+							const encodedFileName = encodeURIComponent(data.filename)
+							const downloadUrl = `/download/${encodedFileName}`
+							const a = document.createElement('a')
+							a.href = downloadUrl
+							a.download = ''
+							document.body.appendChild(a)
+							a.click()
+							document.body.removeChild(a)
 						}
 					}
 					
