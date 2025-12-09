@@ -244,7 +244,7 @@ const App = () => {
 	
 			// Подключаемся к WebSocket
 			const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-			const socketUrl = `${protocol}//${window.location.host}/queuesocket/${task_id}`
+			const socketUrl = `wss://videovault.ru/queuesocket/?task_id=${task_id}`
 			const socket = new WebSocket(socketUrl)
 	
 			socket.onopen = () => {
