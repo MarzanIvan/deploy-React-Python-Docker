@@ -559,7 +559,15 @@ async def download_file(filename: str = Path(...)):
 
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
-
+    # Проверяем размер файла
+    file_size = os.path.getsize(file_path)
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Файл слишком большой ({file_size / (1024**3):.2f} ГБ). "
+                   f"Максимально разрешено: {MAX_FILE_SIZE / (1024**3):.2f} ГБ."
+        )
+    
     task_id = download_queue.get_task_id_by_filename(filename)
     
     async def file_iterator():
@@ -571,14 +579,6 @@ async def download_file(filename: str = Path(...)):
             # НЕ удаляем задачу сразу - она удалится через 60 секунд после завершения
             # в методе execute_download_task
             pass
-
-    # Обновляем статус, что файл скачивается
-    #if task_id:
-        #await download_queue.update_task_status(
-            #task_id,
-            #message="Скачивание файла...",
-            #progress=100
-        #)
 
     async def file_iterator():
         try:
@@ -597,9 +597,6 @@ async def download_file(filename: str = Path(...)):
                 )
 
     return StreamingResponse(file_iterator(), media_type="application/octet-stream")
-
-
-
 
 # ========== СТАРЫЙ МЕТОД (для совместимости) ==========
 
