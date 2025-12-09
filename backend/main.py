@@ -2,8 +2,8 @@ import logging
 import os
 import subprocess
 import asyncio
-import sqlite3
-from fastapi import FastAPI, HTTPException, Form, BackgroundTasks, WebSocket, WebSocketDisconnect, BackgroundTasks, Path, APIRouter
+import shutil
+from fastapi import FastAPI, HTTPException, Form, File, UploadFile, BackgroundTasks, WebSocket, WebSocketDisconnect, BackgroundTasks, Path, APIRouter
 from yt_dlp import YoutubeDL
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -12,7 +12,8 @@ from fastapi.responses import FileResponse
 from urllib.parse import unquote
 
 
-import os
+
+
 
 # Импортируем компонент счётчика
 from counter import counter_app
@@ -49,6 +50,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Очередь загрузок и прогресс
+download_queue = asyncio.Queue()
+tasks_progress = {}
+task_counter = 0
 
 # Прогресс загрузки
 download_progress = {"progress": 0, "message": ""}
@@ -141,17 +147,39 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
 
-@app.websocket("/queuesocket/")
-async def queue_websocket(websocket: WebSocket):
+# =====================
+# Очередь
+# =====================
+async def process_queue():
+    while True:
+        task_id, download_task = await download_queue.get()
+        try:
+            tasks_progress[task_id]["message"] = "Загрузка началась"
+            await download_task()
+        except Exception as e:
+            tasks_progress[task_id]["progress"] = -1
+            tasks_progress[task_id]["message"] = f"Ошибка: {e}"
+        finally:
+            download_queue.task_done()
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(process_queue())
+
+@app.websocket("/queuesocket/{task_id}")
+async def websocket_endpoint(websocket: WebSocket, task_id: int):
     await websocket.accept()
     try:
         while True:
-            # Формируем данные о всех задачах очереди
-            data = [{"task_id": task_id, **info} for task_id, info in tasks_progress.items()]
-            await websocket.send_json(data)
-            await asyncio.sleep(1)  # частота обновления прогресса
+            progress_data = tasks_progress.get(task_id)
+            if progress_data:
+                await websocket.send_json(progress_data)
+                if progress_data['progress'] >= 100 or progress_data['progress'] == -1:
+                    break
+            await asyncio.sleep(1)
     except WebSocketDisconnect:
-        logger.info("Queue WebSocket disconnected")
+        logger.info(f"WebSocket disconnected for task {task_id}")
+
 
 
 @app.post("/download_video/")
