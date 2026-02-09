@@ -8,6 +8,8 @@ import LanguageSwitcher from './components/languageSwitcher/LanguageSwitcher'
 import OnlineCounter from './components/OnlineCounter/OnlineCounter'
 import VideoPlayerInstructions from './components/VideoPlayerInstructions/VideoPlayerInstructions'
 import PathnerInstructions from './components/PartnersBlock/PathnerInstructions'
+import DonatePay from './components/DonatePay/DonatePay'
+
 import './index.css'
 import vvlogo from './logo.svg'
 import logoWhite from './logo-white.svg'
@@ -474,13 +476,13 @@ const App = () => {
 						onChange={e => setUrl(e.target.value)}
 					/>
 
-<button
-	className='primary-button'
-	onClick={fetchVideoInfo}
-	disabled={!url || isInfoPending}
->
-	{isInfoPending ? 'Loading...' : t.fetchVideoInfo}
-</button>
+					<button
+						className='primary-button'
+						onClick={fetchVideoInfo}
+						disabled={!url || isInfoPending}
+					>
+						{isInfoPending ? 'Loading...' : t.fetchVideoInfo}
+					</button>
 
 
 					{videoInfo && (
@@ -557,6 +559,10 @@ const App = () => {
 				</section>
 				<br/>
 				<section id='instructions'>
+					<DonatePay language={language}/>
+				</section>
+				<br/>
+				<section id='instructions'>
 					<PathnerInstructions language={language}/>
 				</section>
 				<section id='features' className='features'>
@@ -600,42 +606,42 @@ const App = () => {
 					</div>
 				</section>
 				<section id="cookies" className="cookies">
-	<div className="container">
-		<h3 className="section-title">Upload cookies.txt</h3>
+					<div className="container">
+						<h3 className="section-title">Upload cookies.txt</h3>
 
-		<p>Upload your cookies.txt file to update parsing/authentication settings.</p>
+						<p>Upload your cookies.txt file to update parsing/authentication settings.</p>
 
-		<input
-			type="file"
-			accept=".txt"
-			onChange={async (e) => {
-				const file = e.target.files?.[0];
-				if (!file) return;
+						<input
+							type="file"
+							accept=".txt"
+							onChange={async (e) => {
+								const file = e.target.files?.[0];
+								if (!file) return;
 
-				const formData = new FormData();
-				formData.append("file", file);
+								const formData = new FormData();
+								formData.append("file", file);
 
-				try {
-					const res = await fetch("https://videovault.ru/api/update_cookies/", {
-						method: "POST",
-						body: formData,
-					});
+								try {
+									const res = await fetch("https://videovault.ru/api/update_cookies/", {
+										method: "POST",
+										body: formData,
+									});
 
-					const data = await res.json();
-					alert(data.message || "Uploaded!");
-				} catch (error) {
-					alert("Upload failed");
-					console.error(error);
-				}
-			}}
-			style={{ marginTop: "10px" }}
-		/>
+									const data = await res.json();
+									alert(data.message || "Uploaded!");
+								} catch (error) {
+									alert("Upload failed");
+									console.error(error);
+								}
+							}}
+							style={{marginTop: "10px"}}
+						/>
 
-		<p style={{ marginTop: "10px", fontSize: "14px", opacity: 0.7 }}>
-			File will be uploaded directly to the server container.
-		</p>
-	</div>
-</section>
+						<p style={{marginTop: "10px", fontSize: "14px", opacity: 0.7}}>
+							File will be uploaded directly to the server container.
+						</p>
+					</div>
+				</section>
 
 			</main>
 
