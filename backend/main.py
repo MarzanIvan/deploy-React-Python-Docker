@@ -472,15 +472,12 @@ async def update_cookies(
 
     try:
         content = await file.read()
-
         with open(COOKIE_TXT_PATH, "wb") as f:
             f.write(content)
-
         return {
             "status": "success",
             "message": "cookies.txt updated"
         }
-
     except Exception as e:
         raise HTTPException(
             status_code=500,
