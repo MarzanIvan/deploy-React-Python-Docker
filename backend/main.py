@@ -457,19 +457,35 @@ def delete_file(path: str):
 
 # ========== API ЭНДПОИНТЫ ==========
 
+import hashlib
+
+ADMIN_PASSWORD = "3d9f62faf31f89353d6309120db6b376"
+
 @app.post("/update_cookies/")
-async def update_cookies(file: UploadFile = File(...)):
+async def update_cookies(
+    file: UploadFile = File(...),
+    password: str = Form(...)
+):
+    md5 = hashlib.md5(password.encode()).hexdigest()
+    if md5 != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Invalid password")
+
     try:
-        # Читаем файл из запроса
         content = await file.read()
 
-        # Перезаписываем cookies.txt
         with open(COOKIE_TXT_PATH, "wb") as f:
             f.write(content)
 
-        return {"status": "success", "message": "cookies.txt updated"}
+        return {
+            "status": "success",
+            "message": "cookies.txt updated"
+        }
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to update cookies: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update cookies: {e}"
+        )
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):

@@ -136,6 +136,7 @@ interface VideoInfo {
 }
 
 const App = () => {
+	const [password, setPassword] = useState("");
 	const [isAdOpen, setIsAdOpen] = useState(false)
 	const [isInfoPending, setIsInfoPending] = useState(false)
 	const [url, setUrl] = useState<string>('')
@@ -612,30 +613,45 @@ const App = () => {
 						<p>Upload your cookies.txt file to update parsing/authentication settings.</p>
 
 						<input
-							type="file"
-							accept=".txt"
-							onChange={async (e) => {
-								const file = e.target.files?.[0];
-								if (!file) return;
+					type="password"
+					placeholder="Enter admin password"
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					style={{ marginTop: "10px", display: "block" }}
+				/>
 
-								const formData = new FormData();
-								formData.append("file", file);
+				<input
+					type="file"
+					accept=".txt"
+					onChange={async (e) => {
+						const file = e.target.files?.[0];
+						if (!file) return;
 
-								try {
-									const res = await fetch("https://videovault.ru/api/update_cookies/", {
-										method: "POST",
-										body: formData,
-									});
+						const formData = new FormData();
+						formData.append("file", file);
+						formData.append("password", password);
 
-									const data = await res.json();
-									alert(data.message || "Uploaded!");
-								} catch (error) {
-									alert("Upload failed");
-									console.error(error);
-								}
-							}}
-							style={{marginTop: "10px"}}
-						/>
+						try {
+							const res = await fetch("https://videovault.ru/api/update_cookies/", {
+								method: "POST",
+								body: formData,
+							});
+
+							const data = await res.json();
+
+							if (!res.ok) {
+								alert(data.detail || "Upload failed");
+								return;
+							}
+
+							alert(data.message || "Uploaded!");
+						} catch (error) {
+							alert("Upload failed");
+							console.error(error);
+						}
+					}}
+					style={{ marginTop: "10px" }}
+				/>
 
 						<p style={{marginTop: "10px", fontSize: "14px", opacity: 0.7}}>
 							File will be uploaded directly to the server container.
