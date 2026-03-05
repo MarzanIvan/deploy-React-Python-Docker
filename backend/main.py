@@ -300,6 +300,14 @@ class DownloadQueue:
                     "quiet": True,
                     "no_warnings": True,
                     "noprogress": False,
+                    "js_runtimes": {
+                        "node": {}
+                    },
+                    "extractor_args": {
+                        "youtube": {
+                            "player_client": ["web"]
+                        }
+                    }
                 }
                 
                 # Если нужен только аудио
@@ -312,6 +320,7 @@ class DownloadQueue:
                             'preferredquality': '192',
                         }],
                         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s.%(ext)s"),
+                        
                     })
                 
                 await self.update_task_status(
