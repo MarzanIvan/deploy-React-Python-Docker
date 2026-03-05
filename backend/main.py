@@ -305,7 +305,7 @@ class DownloadQueue:
                     },
                     "extractor_args": {
                         "youtube": {
-                            "player_client": ["web"]
+                            "player_client": ["web_safari,web"]
                         }
                     }
                 }
@@ -320,7 +320,7 @@ class DownloadQueue:
                             'preferredquality': '192',
                         }],
                         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s.%(ext)s"),
-                        
+
                     })
                 
                 await self.update_task_status(
@@ -420,7 +420,7 @@ def get_video_info(url: str):
             },
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["web"]
+                    "player_client": ["web_safari,web"]
                 }
             }
         }
