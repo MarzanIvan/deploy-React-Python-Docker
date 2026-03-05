@@ -405,7 +405,12 @@ def get_video_info(url: str):
     try:
         ydl_opts = {
             "quiet": True,
-            "cookiefile": COOKIE_TXT_PATH
+            "cookiefile": COOKIE_TXT_PATH,
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["web"]
+                }
+            }
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
