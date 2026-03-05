@@ -411,7 +411,7 @@ def get_video_info(url: str):
             },
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["web", "android"]
+                    "player_client": ["web", "android", "ios"]
                 }
             }
         }
