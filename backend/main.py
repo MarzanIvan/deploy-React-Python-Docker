@@ -414,6 +414,8 @@ def get_video_info(url: str):
     try:
         ydl_opts = {
             "quiet": True,
+            "no_warnings": True,
+            "nocheckcertificate": True,
             "cookiefile": COOKIE_TXT_PATH,
             "js_runtimes": {
                 "node": {}
