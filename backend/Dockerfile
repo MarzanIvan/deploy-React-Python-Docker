@@ -7,6 +7,9 @@ RUN pip install -r requirements.txt --default-timeout=1250 future
 # Install ffmpeg + Node.js runtime
 RUN apt-get update && \
     apt-get install -y ffmpeg nodejs npm && \
+    ca-certificates \
+    openssl \
+    && update-ca-certificates \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
