@@ -425,7 +425,8 @@ def get_video_info(url: str):
                 "youtube": {
                     "player_client": ["web_safari,web"]
                 }
-            }
+            },
+            "proxy": "socks5h://user379324:oef1qg@194.87.142.93:15574"
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
