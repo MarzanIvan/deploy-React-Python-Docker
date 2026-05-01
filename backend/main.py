@@ -307,7 +307,8 @@ class DownloadQueue:
                         "youtube": {
                             "player_client": ["web_safari,web"]
                         }
-                    }
+                    },
+                    "proxy": "socks5h://47.237.64.190:1011",
                 }
                 
                 # Если нужен только аудио
