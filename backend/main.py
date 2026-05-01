@@ -308,7 +308,7 @@ class DownloadQueue:
                             "player_client": ["web_safari,web"]
                         }
                     },
-                    "proxy": "socks5h://47.237.64.190:1011",
+                    "proxy": "socks5h://user379324:oef1qg@194.87.142.93:15574"
                 }
                 
                 # Если нужен только аудио
