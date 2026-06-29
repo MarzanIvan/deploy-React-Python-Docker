@@ -308,7 +308,7 @@ class DownloadQueue:
                             "player_client": ["web_safari,web"]
                         }
                     },
-                    "proxy": "socks5h://user379324:oef1qg@194.87.142.93:15574"
+                    "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
                 }
                 
                 # Если нужен только аудио
@@ -426,7 +426,7 @@ def get_video_info(url: str):
                     "player_client": ["web_safari,web"]
                 }
             },
-            "proxy": "socks5h://user379324:oef1qg@194.87.142.93:15574"
+            "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
