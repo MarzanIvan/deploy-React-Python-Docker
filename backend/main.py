@@ -300,14 +300,7 @@ class DownloadQueue:
                     "quiet": True,
                     "no_warnings": True,
                     "noprogress": False,
-                    "js_runtimes": {
-                        "node": {}
-                    },
-                    "extractor_args": {
-                        "youtube": {
-                            "player_client": ["web_safari,web"]
-                        }
-                    },
+                    "sleep_interval": 1,
                     "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
                 }
                 
@@ -418,14 +411,7 @@ def get_video_info(url: str):
             "no_warnings": True,
             "nocheckcertificate": True,
             "cookiefile": COOKIE_TXT_PATH,
-            "js_runtimes": {
-                "node": {}
-            },
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["web_safari,web"]
-                }
-            },
+            "sleep_interval": 1,
             "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
         }
         with YoutubeDL(ydl_opts) as ydl:
