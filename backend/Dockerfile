@@ -4,21 +4,33 @@ COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt --default-timeout=1250 future
 
-# Install ffmpeg + Node.js runtime
+# Install ffmpeg + system dependencies (curl/unzip for deno, git for bgutil)
 RUN apt-get update && \
     apt-get install -y \
         ffmpeg \
-        nodejs \
-        npm \
         ca-certificates \
         openssl \
+        curl \
+        unzip \
+        git \
     && update-ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install deno — recommended JS runtime for yt-dlp (required for PO Token generation)
+RUN curl -fsSL https://deno.land/install.sh | sh
+ENV DENO_INSTALL="/root/.deno"
+ENV PATH="${DENO_INSTALL}/bin:${PATH}"
+
 RUN pip install -U "yt-dlp[default]"
 RUN pip install python-multipart
 RUN pip install uvicorn[standard]
+
+# Install bgutil PO Token provider plugin for YouTube downloads
+RUN pip install bgutil-ytdlp-pot-provider && \
+    git clone https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git /root/bgutil-ytdlp-pot-provider && \
+    cd /root/bgutil-ytdlp-pot-provider/server && \
+    deno install
 
 COPY . .
 

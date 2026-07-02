@@ -23,7 +23,9 @@ logger = logging.getLogger(__name__)
 
 # Указываем путь к FFmpeg
 FFMPEG_PATH = r"/usr/bin/ffmpeg"
-os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
+# Добавляем deno и ffmpeg в PATH (deno нужен для PO Token генерации в yt-dlp)
+DENO_BIN = "/root/.deno/bin"
+os.environ["PATH"] = DENO_BIN + os.pathsep + os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
 COOKIE_TXT_PATH = "/cookies.txt"  # Абсолютный путь в контейнере
 
 # Проверка наличия FFmpeg
@@ -296,7 +298,6 @@ class DownloadQueue:
                     "format": f"{video_format_id}+bestaudio/best",
                     "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
                     "ffmpeg_location": FFMPEG_PATH,
-                    "cookiefile": COOKIE_TXT_PATH,
                     "quiet": True,
                     "no_warnings": True,
                     "noprogress": False,
@@ -410,7 +411,6 @@ def get_video_info(url: str):
             "quiet": True,
             "no_warnings": True,
             "nocheckcertificate": True,
-            "cookiefile": COOKIE_TXT_PATH,
             "sleep_interval": 1,
             "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
         }
