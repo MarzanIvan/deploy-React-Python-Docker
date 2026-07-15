@@ -6,3 +6,9 @@ frontend/node_modules/
 backend/ffmpeg/
 backend/cookies1.txt
 ins.md
+# Python virtual environments
+venv/
+.venv/
+backend/venv/
+__pycache__/
+*.pyc

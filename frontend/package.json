@@ -14,6 +14,8 @@
     "@types/react-toastify": "^4.0.2",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
+    "gsap": "^3.15.0",
+    "ogl": "^1.0.11",
     "postcss": "^8.4.49",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -21,6 +23,7 @@
     "react-scripts": "^5.0.1",
     "react-toastify": "^11.0.2",
     "tailwindcss": "^3.4.15",
+    "three": "^0.185.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -50,6 +53,7 @@
   "devDependencies": {
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
+    "@types/three": "^0.185.1",
     "@types/uuid": "^10.0.0",
     "typescript": "^5.8.2"
   }

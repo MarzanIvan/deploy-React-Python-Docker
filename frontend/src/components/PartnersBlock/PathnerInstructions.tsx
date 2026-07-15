@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import gomLogo from './../../img/GOMimg.png'
 import avanmarket from './../../img/avanmarket.png'
 import lisskins from './../../img/lisskins.png'
 import tradeit from './../../img/tradeit.png'
@@ -61,6 +60,34 @@ const PathnerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 
 	const currentTranslation = translations[language]
 
+	// Render text, converting markdown links [label](url) into clickable anchors
+	const renderWithLinks = (text: string): React.ReactNode => {
+		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+		const nodes: React.ReactNode[] = []
+		let lastIndex = 0
+		let match: RegExpExecArray | null
+		while ((match = linkRegex.exec(text)) !== null) {
+			if (match.index > lastIndex) {
+				nodes.push(text.slice(lastIndex, match.index))
+			}
+			nodes.push(
+				<a
+					key={match.index}
+					href={match[2]}
+					target='_blank'
+					rel='noopener noreferrer'
+				>
+					{match[1]}
+				</a>
+			)
+			lastIndex = match.index + match[0].length
+		}
+		if (lastIndex < text.length) {
+			nodes.push(text.slice(lastIndex))
+		}
+		return nodes
+	}
+
 	const nextStep = () => {
 		if (step < currentTranslation.steps.length - 1) {
 			setStep(step + 1)
@@ -110,7 +137,7 @@ const PathnerInstructions: React.FC<VideoPlayerInstructionsProps> = ({
 			</div>
 
 			<div className='video-player-text'>
-				<p>{currentTranslation.steps[step]}</p>
+				<p>{renderWithLinks(currentTranslation.steps[step])}</p>
 			</div>
 
 			<div className='video-player-buttons'>

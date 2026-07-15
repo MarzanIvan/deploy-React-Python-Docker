@@ -18,39 +18,32 @@ const AdModal: FC<AdModalProps> = ({ isOpen, onClose }) => {
 	if (!isOpen) return null
 
 	return (
-		<div className='content-box'>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-			<div className="relative w-full max-w-md p-6 bg-white rounded-2xl shadow-lg">
-    <h3 className="text-lg font-semibold text-gray-800 mb-1">💼 Наши партнёр — avan.market, lis-skins, tradeit</h3>
-
-			<p className="text-sm text-gray-600 mb-2">
-				🕹️ Покупай и продавай скины для <strong>CS2, Dota 2</strong> и <strong>Rust</strong> в пару кликов!
-			</p>
-
-			<p className="text-sm text-gray-600 mb-4">
-				💸 Получи <strong>$5 бонус</strong> при первой продаже или покупке.
-			</p>
-
-			<p className="text-xs text-gray-400 mb-4">
-				Переход на сайт партнёра поддержит развитие проекта videovault.ru!
-			</p>
-
-	<div className="flex justify-center">
-    <a
-	href="https://avan.market/?r=njkPFU9sqSEf"
-	target="_blank"
-	rel="noopener noreferrer"
->
-	<button
-		onClick={onClose}
-		className="primary-button px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all"
-	>
-		Перейти
-	</button>
-</a>
-	</div>
-</div>
-</div>
+		<div className='ad-modal-overlay' onClick={onClose}>
+			<div className='ad-modal-card' onClick={(e) => e.stopPropagation()}>
+				<h3>Our partners — avan.market, lis-skins, tradeit</h3>
+				<p>
+					Buy and sell skins for <strong>CS2, Dota 2</strong> and <strong>Rust</strong> in a few clicks.
+				</p>
+				<p>
+					Get a <strong>$5 bonus</strong> on your first purchase or sale.
+				</p>
+				<p className="ad-modal-hint">
+					Visiting our partner helps support the development of videovault.ru
+				</p>
+				<a
+					href="https://avan.market/?r=njkPFU9sqSEf"
+					target="_blank"
+					rel="noopener noreferrer"
+					style={{ textDecoration: 'none' }}
+				>
+					<button
+						onClick={onClose}
+						className="ad-modal-cta"
+					>
+						Visit partner
+					</button>
+				</a>
+			</div>
 		</div>
 	)
 }
