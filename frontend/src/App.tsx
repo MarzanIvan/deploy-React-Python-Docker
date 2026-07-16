@@ -823,8 +823,8 @@ const App = () => {
 						<div className='footer-column'>
 							<h4>{t.footerLegal}</h4>
 							<ul>
-								<li><a href='#'>{t.privacyPolicy}</a></li>
-								<li><a href='#'>{t.termsOfService}</a></li>
+								<li><a href='#privacy-policy'>{t.privacyPolicy}</a></li>
+								<li><a href='#terms-of-service'>{t.termsOfService}</a></li>
 							</ul>
 						</div>
 					</div>

@@ -56,5 +56,13 @@
     "@types/three": "^0.185.1",
     "@types/uuid": "^10.0.0",
     "typescript": "^5.8.2"
+  },
+  "overrides": {
+    "terser-webpack-plugin": {
+      "schema-utils": "^3.3.0"
+    },
+    "@pmmmwh/react-refresh-webpack-plugin": {
+      "schema-utils": "^3.3.0"
+    }
   }
 }
