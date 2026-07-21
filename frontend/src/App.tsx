@@ -12,6 +12,8 @@ import BentoFeatures from './components/BentoFeatures/BentoFeatures'
 import logoWhite from './logo-white.svg'
 import logoBlack from './logo-black.svg'
 import AdModal from './AdModal'
+import CookieConsent, { openCookieSettings } from './components/CookieConsent/CookieConsent'
+import LegalPage, { LegalDocumentType } from './components/Legal/LegalPage'
 
 interface Translations {
 	title: string
@@ -47,6 +49,11 @@ interface Translations {
 	footerLegal?: string
 	privacyPolicy?: string
 	termsOfService?: string
+	cookiePolicy?: string
+	cookieSettings?: string
+	legalConsentText?: string
+	legalConsentJoin?: string
+	legalConsentRequired?: string
 	faq?: string
 	status?: string
 	heroBadge?: string
@@ -83,13 +90,18 @@ const translations: Record<string, Translations> = {
 		aboutTitle: 'About VideoVault',
 		aboutText: 'VideoVault is a free service for downloading videos from popular platforms. Built and maintained by an independent developer, the project focuses on speed, reliability, and user privacy.',
 		contactText: 'Questions or feedback? Reach out:',
-		copyright: '© 2025 VideoVault. All rights reserved.',
+		copyright: '© 2026 VideoVault. All rights reserved.',
 		footerTagline: 'Free video downloader built for speed, privacy, and reliability.',
 		footerNav: 'Navigation',
 		footerSupport: 'Support',
 		footerLegal: 'Legal',
 		privacyPolicy: 'Privacy Policy',
 		termsOfService: 'Terms of Service',
+		cookiePolicy: 'Cookie Policy',
+		cookieSettings: 'Cookie settings',
+		legalConsentText: 'I agree to the',
+		legalConsentJoin: 'and',
+		legalConsentRequired: 'Please accept the Privacy Policy and Terms of Service to continue.',
 		faq: 'FAQ',
 		status: 'Status',
 		heroBadge: 'Online now · No VPN required',
@@ -124,13 +136,18 @@ const translations: Record<string, Translations> = {
 		aboutTitle: 'О VideoVault',
 		aboutText: 'VideoVault — бесплатный сервис для скачивания видео с популярных платформ. Проект создан и поддерживается независимым разработчиком. Фокус на скорости, надёжности и приватности пользователей.',
 		contactText: 'Вопросы или предложения? Свяжитесь с нами:',
-		copyright: '© 2025 VideoVault. Все права защищены.',
+		copyright: '© 2026 VideoVault. Все права защищены.',
 		footerTagline: 'Бесплатный загрузчик видео. Скорость, приватность, надёжность.',
 		footerNav: 'Навигация',
 		footerSupport: 'Поддержка',
 		footerLegal: 'Правовая информация',
 		privacyPolicy: 'Политика конфиденциальности',
-		termsOfService: 'Условия использования',
+		termsOfService: 'Пользовательское соглашение',
+		cookiePolicy: 'Использование cookie',
+		cookieSettings: 'Настройки cookie',
+		legalConsentText: 'Я принимаю',
+		legalConsentJoin: 'и',
+		legalConsentRequired: 'Примите Политику конфиденциальности и Пользовательское соглашение, чтобы продолжить.',
 		faq: 'Частые вопросы',
 		status: 'Статус',
 		heroBadge: 'Сейчас онлайн · Без VPN',
@@ -165,13 +182,18 @@ const translations: Record<string, Translations> = {
 		aboutTitle: '关于 VideoVault',
 		aboutText: 'VideoVault 是一项免费的视频下载服务。由独立开发者构建和维护，专注于速度、可靠性和用户隐私。',
 		contactText: '有问题或反馈？联系我们：',
-		copyright: '© 2025 VideoVault。版权所有。',
+		copyright: '© 2026 VideoVault。版权所有。',
 		footerTagline: '免费视频下载器。速度、隐私、可靠性。',
 		footerNav: '导航',
 		footerSupport: '支持',
 		footerLegal: '法律信息',
 		privacyPolicy: '隐私政策',
 		termsOfService: '服务条款',
+		cookiePolicy: 'Cookie 使用说明',
+		cookieSettings: 'Cookie 设置',
+		legalConsentText: '我已阅读并同意',
+		legalConsentJoin: '和',
+		legalConsentRequired: '请先同意隐私政策和服务条款。',
 		faq: '常见问题',
 		status: '状态',
 		heroBadge: '当前在线 · 无需 VPN',
@@ -237,6 +259,7 @@ const App = () => {
 	const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
 	const [downloadAudio, setDownloadAudio] = useState<boolean>(false)
 	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
+	const [legalAccepted, setLegalAccepted] = useState<boolean>(false)
 
 	const [language, setLanguage] = useState<'en' | 'ru' | 'zh'>('en')
 
@@ -294,6 +317,10 @@ const App = () => {
 	}
 
 	const fetchVideoInfo = async () => {
+		if (!legalAccepted) {
+			toast.error(t.legalConsentRequired)
+			return
+		}
 		setIsAdOpen(true)
 	}
 
@@ -426,6 +453,27 @@ const App = () => {
 		toast.info('Download canceled.')
 	}
 
+	const normalizedPath = typeof window === 'undefined'
+		? '/'
+		: window.location.pathname.replace(/\/+$/, '') || '/'
+	const legalRoutes: Partial<Record<string, LegalDocumentType>> = {
+		'/privacy': 'privacy',
+		'/terms': 'terms',
+		'/cookies': 'cookies',
+	}
+	const legalDocumentType = legalRoutes[normalizedPath]
+
+	if (legalDocumentType) {
+		return (
+			<LegalPage
+				type={legalDocumentType}
+				isDarkMode={isDarkMode}
+				onToggleTheme={toggleTheme}
+				logo={isDarkMode ? logoBlack : logoWhite}
+			/>
+		)
+	}
+
 	return (
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
 			{/* ──────────── HEADER ──────────── */}
@@ -536,7 +584,7 @@ const App = () => {
 						followMouse={true}
 						proximity={250}
 						autoAnimate={false}
-						disabled={isInfoPending || !url.trim()}
+						disabled={isInfoPending || !url.trim() || !legalAccepted}
 						onClick={fetchVideoInfo}
 						className="hero-button"
 						style={{
@@ -550,6 +598,21 @@ const App = () => {
 					>
 						{isInfoPending ? t.downloading : t.fetchVideoInfo}
 					</SpecularButton>
+
+					<div className='legal-consent-control'>
+						<input
+							id='legal-consent'
+							type='checkbox'
+							checked={legalAccepted}
+							onChange={event => setLegalAccepted(event.target.checked)}
+						/>
+						<label htmlFor='legal-consent'>
+							{t.legalConsentText}{' '}
+							<a href='/privacy' target='_blank' rel='noopener noreferrer'>{t.privacyPolicy}</a>{' '}
+							{t.legalConsentJoin}{' '}
+							<a href='/terms' target='_blank' rel='noopener noreferrer'>{t.termsOfService}</a>
+						</label>
+					</div>
 
 					{videoInfo && (
 						<div style={{ marginTop: '20px' }}>
@@ -823,8 +886,10 @@ const App = () => {
 						<div className='footer-column'>
 							<h4>{t.footerLegal}</h4>
 							<ul>
-								<li><a href='#privacy-policy'>{t.privacyPolicy}</a></li>
-								<li><a href='#terms-of-service'>{t.termsOfService}</a></li>
+								<li><a href='/privacy'>{t.privacyPolicy}</a></li>
+								<li><a href='/terms'>{t.termsOfService}</a></li>
+								<li><a href='/cookies'>{t.cookiePolicy}</a></li>
+								<li><button type='button' className='footer-link-button' onClick={openCookieSettings}>{t.cookieSettings}</button></li>
 							</ul>
 						</div>
 					</div>
@@ -838,6 +903,7 @@ const App = () => {
 					</div>
 				</div>
 			</footer>
+			<CookieConsent language={language} />
 		</div>
 	)
 }

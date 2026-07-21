@@ -711,6 +711,64 @@ a:hover {
   transform: rotate(45deg);
 }
 
+.legal-consent-control {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 13px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.legal-consent-control input[type="checkbox"] {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-accent);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.legal-consent-control input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 4 4L19 6'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 15px;
+}
+
+.legal-consent-control input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--accent-subtle);
+  border-color: var(--accent);
+}
+
+.legal-consent-control label {
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  cursor: pointer;
+}
+
+.legal-consent-control a {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.legal-consent-control a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 /* ---------- PROGRESS ---------- */
 .progress-container {
   margin-top: 18px;
@@ -1065,15 +1123,32 @@ a:hover {
 .footer-column ul li {
   margin-bottom: 14px;
 }
-.footer-column ul li a {
+.footer-column ul li a,
+.footer-link-button {
   font-size: 0.9375rem;
   color: var(--text-secondary);
   text-decoration: none;
   transition: all var(--transition);
 }
-.footer-column ul li a:hover {
+.footer-link-button {
+  padding: 0;
+  font-family: var(--font-sans);
+  line-height: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.footer-column ul li a:hover,
+.footer-link-button:hover {
   color: var(--accent);
   padding-left: 4px;
+}
+
+.footer-link-button:focus-visible,
+.footer-column a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .footer-bottom {
