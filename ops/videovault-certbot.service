@@ -1,8 +1,0 @@
-[Unit]
-Description=Renew VideoVault Let's Encrypt certificates
-After=network-online.target docker.service
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/certbot renew --quiet
