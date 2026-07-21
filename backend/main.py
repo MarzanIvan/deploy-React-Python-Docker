@@ -1,8 +1,6 @@
 import logging
 import os
-import subprocess
 import asyncio
-import sqlite3
 import shutil
 import uuid
 from collections import OrderedDict
@@ -184,29 +182,26 @@ class DownloadQueue:
     async def process_queue(self):
         while True:
             try:
+                task_id = None
+                task_data = None
+
                 async with self.lock:
-                    # Проверяем, есть ли свободные слоты
-                    if len(self.active_tasks) >= self.max_concurrent:
-                        await asyncio.sleep(1)
-                        continue
-                    
-                    # Находим следующую задачу со статусом 'waiting'
-                    task_id = None
-                    task_data = None
-                    
-                    for tid, data in self.queue.items():
-                        if tid not in self.active_tasks and data.get('status') == 'waiting':
-                            task_id = tid
-                            task_data = data
-                            break
-                    
-                    if not task_id:
-                        await asyncio.sleep(1)
-                        continue
-                    
-                    # Обновляем статус задачи
-                    self.queue[task_id]['status'] = 'processing'
-                    self.active_tasks[task_id] = task_data
+                    if len(self.active_tasks) < self.max_concurrent:
+                        for tid, data in self.queue.items():
+                            if tid not in self.active_tasks and data.get('status') == 'waiting':
+                                task_id = tid
+                                task_data = data
+                                break
+
+                        if task_id:
+                            self.queue[task_id]['status'] = 'processing'
+                            self.active_tasks[task_id] = task_data
+
+                # Never sleep while holding the queue lock. Doing so blocks API
+                # status calls and completed tasks from releasing their slot.
+                if not task_id:
+                    await asyncio.sleep(1)
+                    continue
                 
                 # Обновляем статус для WebSocket
                 await self.update_task_status(
@@ -259,121 +254,112 @@ class DownloadQueue:
 
 
     async def _download_video_task(self, task_id: str, url: str, video_format_id: str, download_audio: bool):
-            """Основная функция загрузки видео"""
-            
-            def progress_hook(d):
-                """Хук для отслеживания прогресса"""
-                if d['status'] == 'downloading':
-                    if 'total_bytes' in d and d['total_bytes']:
-                        progress = d['downloaded_bytes'] / d['total_bytes'] * 100
-                        asyncio.create_task(
-                            self.update_task_status(
-                                task_id,
-                                progress=max(10, progress * 0.9),  # От 10% до 100%
-                                message=f"Загрузка: {progress:.1f}%"
-                            )
-                        )
-                elif d['status'] == 'finished':
-                    asyncio.create_task(
-                        self.update_task_status(
-                            task_id,
-                            progress=95,
-                            message="Обработка видео..."
-                        )
-                    )
-            
-            try:
-                # Обновляем статус - начали загрузку
-                await self.update_task_status(
-                    task_id,
-                    progress=10,
-                    message="Подготовка к загрузке..."
-                )
-                
-                # Обновляем yt-dlp
-                update_yt_dlp()
-                
-                # Настройки для загрузки видео
-                video_opts = {
-                    "format": f"{video_format_id}+bestaudio/best",
-                    "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
-                    "ffmpeg_location": FFMPEG_PATH,
-                    "quiet": True,
-                    "no_warnings": True,
-                    "noprogress": False,
-                    "sleep_interval": 1,
-                    "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
-                }
-                
-                # Если нужен только аудио
-                if download_audio:
-                    video_opts.update({
-                        "format": "bestaudio/best",
-                        "postprocessors": [{
-                            'key': 'FFmpegExtractAudio',
-                            'preferredcodec': 'mp3',
-                            'preferredquality': '192',
-                        }],
-                        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s.%(ext)s"),
+        """Download a video without blocking FastAPI's event loop."""
+        loop = asyncio.get_running_loop()
+        last_reported_progress = -1
 
-                    })
-                
-                await self.update_task_status(
-                    task_id,
-                    progress=15,
-                    message="Получение информации о видео..."
-                )
-                
-                # Получаем информацию о видео
-                with YoutubeDL(video_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    
-                    await self.update_task_status(
-                        task_id,
-                        progress=20,
-                        message="Начинаем загрузку..."
-                    )
-                    
-                    # Скачиваем видео
-                    ydl.download([url])
-                    
-                    # Определяем имя файла
-                    if download_audio:
-                        filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp3"
-                    else:
-                        # Получаем список файлов в директории
-                        files = os.listdir(DOWNLOAD_DIR)
-                        # Находим последний созданный файл с соответствующим id
-                        matching_files = [f for f in files if info['id'] in f]
-                        if matching_files:
-                            filename = sorted(matching_files, 
-                                            key=lambda x: os.path.getctime(os.path.join(DOWNLOAD_DIR, x)), 
-                                            reverse=True)[0]
-                        else:
-                            filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp4"
-                    
-                    # Полный путь к файлу
-                    filepath = os.path.join(DOWNLOAD_DIR, filename)
-                    
-                    if os.path.exists(filepath):
-                        await self.update_task_status(
-                            task_id,
-                            progress=100,
-                            message="Загрузка завершена!",
-                            completed=True,
-                            filename=filename
+        def report_status(**kwargs):
+            asyncio.run_coroutine_threadsafe(
+                self.update_task_status(task_id, **kwargs),
+                loop,
+            )
+
+        def progress_hook(data):
+            nonlocal last_reported_progress
+
+            if data.get('status') == 'downloading':
+                total_bytes = data.get('total_bytes') or data.get('total_bytes_estimate')
+                downloaded_bytes = data.get('downloaded_bytes', 0)
+                if total_bytes:
+                    progress = downloaded_bytes / total_bytes * 100
+                    whole_percent = int(progress)
+                    if whole_percent > last_reported_progress:
+                        last_reported_progress = whole_percent
+                        report_status(
+                            progress=max(10, progress * 0.9),
+                            message=f"Загрузка: {progress:.1f}%",
                         )
-                    else:
-                        raise Exception("Файл не был создан")
-                        
-            except Exception as e:
-                logger.error(f"Download task error for {task_id}: {e}")
-                await self.update_task_status(
-                    task_id,
-                    progress=-1,
-                    message=f"Ошибка загрузки: {str(e)}",
-                    error=True
-                )
+            elif data.get('status') == 'finished':
+                report_status(progress=95, message="Обработка видео...")
+
+        def run_download():
+            video_opts = {
+                "format": f"{video_format_id}+bestaudio/best",
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
+                "ffmpeg_location": FFMPEG_PATH,
+                "quiet": True,
+                "no_warnings": True,
+                "noprogress": False,
+                "sleep_interval": 1,
+                "progress_hooks": [progress_hook],
+                "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
+            }
+
+            if download_audio:
+                video_opts.update({
+                    "format": "bestaudio/best",
+                    "postprocessors": [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                    "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s.%(ext)s"),
+                })
+
+            with YoutubeDL(video_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                report_status(progress=20, message="Начинаем загрузку...")
+                ydl.download([url])
+
+            if download_audio:
+                filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp3"
+            else:
+                files = os.listdir(DOWNLOAD_DIR)
+                matching_files = [file for file in files if info['id'] in file]
+                if matching_files:
+                    filename = sorted(
+                        matching_files,
+                        key=lambda file: os.path.getctime(os.path.join(DOWNLOAD_DIR, file)),
+                        reverse=True,
+                    )[0]
+                else:
+                    filename = f"{info['title'].replace('/', '_')[:200]}_{info['id']}.mp4"
+
+            filepath = os.path.join(DOWNLOAD_DIR, filename)
+            if not os.path.exists(filepath):
+                raise RuntimeError("Файл не был создан")
+
+            return filename
+
+        try:
+            await self.update_task_status(
+                task_id,
+                progress=10,
+                message="Подготовка к загрузке...",
+            )
+            await self.update_task_status(
+                task_id,
+                progress=15,
+                message="Получение информации о видео...",
+            )
+
+            filename = await asyncio.to_thread(run_download)
+
+            await self.update_task_status(
+                task_id,
+                progress=100,
+                message="Загрузка завершена!",
+                completed=True,
+                filename=filename,
+            )
+        except Exception as e:
+            logger.error(f"Download task error for {task_id}: {e}")
+            await self.update_task_status(
+                task_id,
+                progress=-1,
+                message=f"Ошибка загрузки: {str(e)}",
+                error=True,
+            )
 
 # Глобальный экземпляр менеджера очереди
 download_queue = DownloadQueue(max_concurrent=1)
@@ -382,28 +368,19 @@ download_queue = DownloadQueue(max_concurrent=1)
 
 # Метод в DownloadQueue для завершения задачи по task_id
 async def finish_task_by_id(self, task_id: str):
-        """Завершает задачу и удаляет её из очереди"""
-        async with self.lock:
-            if task_id in self.task_status:
-                await self.update_task_status(
-                    task_id,
-                    progress=100,
-                    message="Задача завершена",
-                    completed=True
-                )
-            # Убираем задачу
-            await self.remove_task(task_id)
+    """Завершает задачу и удаляет её из очереди"""
+    if task_id in self.task_status:
+        await self.update_task_status(
+            task_id,
+            progress=100,
+            message="Задача завершена",
+            completed=True,
+        )
+    await self.remove_task(task_id)
 
 
     # Привязываем метод к DownloadQueue
 DownloadQueue.finish_task_by_id = finish_task_by_id
-
-def update_yt_dlp():
-    try:
-        subprocess.run(["pip", "install", "--upgrade", "yt-dlp", "--quiet"], check=True)
-        logger.info("yt-dlp обновлена успешно!")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка при обновлении yt-dlp: {e}")
 
 def get_video_info(url: str):
     try:
@@ -476,7 +453,7 @@ async def update_cookies(
 
 @app.post("/get_video_info/")
 async def video_info(url: str = Form(...)):
-    video_info = get_video_info(url)
+    video_info = await asyncio.to_thread(get_video_info, url)
 
     if video_info:
         # Очищаем папку загрузок от старых файлов
@@ -526,7 +503,7 @@ async def download_video(
 ):
     try:
         # Проверяем, что формат существует
-        video_info = get_video_info(url)
+        video_info = await asyncio.to_thread(get_video_info, url)
         if not video_info:
             raise HTTPException(status_code=400, detail="Не удалось получить информацию о видео")
         
@@ -592,27 +569,9 @@ async def download_file(filename: str = Path(...)):
                 while chunk := f.read(1024 * 1024):
                     yield chunk
         finally:
-            # НЕ удаляем задачу сразу - она удалится через 60 секунд после завершения
-            # в методе execute_download_task
-            pass
-
-
-
-    async def file_iterator():
-        try:
-            with open(file_path, "rb") as f:
-                while chunk := f.read(1024 * 1024):
-                    yield chunk
-        finally:
             # Убираем задачу из очереди после завершения скачки
             if task_id:
                 await download_queue.remove_task(task_id)
-            if task_id:
-                await download_queue.update_task_status(
-                    task_id,
-                    message="Скачивание файла...",
-                    progress=100
-                )
 
     return StreamingResponse(file_iterator(), media_type="application/octet-stream")
 

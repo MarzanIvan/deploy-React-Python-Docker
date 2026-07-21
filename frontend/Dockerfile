@@ -1,17 +1,16 @@
-FROM node:24-alpine AS build
+FROM node:20-alpine AS build
 
-COPY package.json package.json
-RUN rm -rf node_modules package-lock.json
-RUN npm install --legacy-peer-deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
 FROM nginx:stable-alpine
 
-COPY --from=build /build /usr/share/nginx/html
-COPY --from=build nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 3000
-EXPOSE 443
 
 CMD [ "nginx", "-g", "daemon off;"]

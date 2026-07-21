@@ -1,6 +1,12 @@
 FROM python:3.12-slim
 
-COPY requirements.txt requirements.txt
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+COPY requirements.txt ./requirements.txt
 
 RUN pip install -r requirements.txt --default-timeout=1250 future
 
@@ -34,4 +40,9 @@ RUN pip install bgutil-ytdlp-pot-provider && \
 
 COPY . .
 
-CMD ["python", "-m", "uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000
+
+# The application keeps its download queue in memory, so it must run as a
+# single production worker. Never enable --reload here: without an explicit
+# reload directory WatchFiles scans the whole container filesystem.
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]
