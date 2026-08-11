@@ -27,7 +27,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "prestart": "node scripts/build-legal.js",
     "start": "react-scripts start",
+    "prebuild": "node scripts/build-legal.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Карта сайта — VideoVault</title>
+    <meta name="description" content="Полный перечень страниц и правовых документов сервиса VideoVault." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://videovault.ru/sitemap" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/legal/legal.css?v=b2c57e45" />
+  </head>
+  <body>
+    <script>(function(){try{if(localStorage.getItem('theme')==='dark'){document.body.classList.add('dark-theme');}}catch(e){}})();</script>
+    <a class="skip-link" href="#legal-content">Перейти к документу</a>
+    <header class="legal-header">
+      <div class="container legal-header__inner">
+        <a class="legal-brand" href="/" aria-label="VideoVault — на главную">
+          <img src="/favicon-32x32.png" width="32" height="32" alt="" />
+          <span>VideoVault</span>
+          <span class="legal-brand__ru">ВидеоВолт</span>
+        </a>
+        <div class="legal-header__actions">
+          <a class="legal-back-link" href="/">На главную</a>
+          <button class="legal-theme-button" type="button" aria-label="Переключить тему" onclick="(function(){var d=document.body.classList.toggle('dark-theme');try{localStorage.setItem('theme',d?'dark':'light');}catch(e){}})()">
+            <svg class="icon-light" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>
+            <svg class="icon-dark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="legal-content" class="legal-main">
+      <section class="legal-hero">
+        <div class="container legal-hero__inner">
+          <span class="legal-eyebrow">Навигация</span>
+          <h1>Карта сайта</h1>
+          <p>Полный перечень страниц VideoVault, включая правовые документы и служебные ресурсы.</p>
+        </div>
+      </section>
+
+      <div class="container sitemap-grid">
+        <section class="sitemap-card">
+          <h2>Основные разделы</h2>
+          <p>Страницы и разделы сервиса VideoVault.</p>
+          <ul>
+            <li><a href="/">Главная<span>Загрузка видео по ссылке</span></a></li>
+            <li><a href="/#features">Возможности<span>Качество, форматы, приватность</span></a></li>
+            <li><a href="/#instructions">Помощь<span>Установка видеоплееров</span></a></li>
+            <li><a href="/#about">О сервисе<span>Информация о VideoVault</span></a></li>
+            <li><a href="/#contact">Контакты<span>Связь с оператором</span></a></li>
+          </ul>
+        </section>
+        <section class="sitemap-card">
+          <h2>Правовые документы</h2>
+          <p>Документы, обязательные в соответствии с Федеральным законом № 152-ФЗ.</p>
+          <ul>
+            <li><a href="/privacy">Политика конфиденциальности<span>Обработка и защита персональных данных</span></a></li>
+            <li><a href="/consent">Согласие на обработку персональных данных<span>Статья 9 Федерального закона № 152-ФЗ</span></a></li>
+            <li><a href="/terms">Пользовательское соглашение<span>Условия использования сервиса</span></a></li>
+            <li><a href="/cookies">Использование файлов cookie<span>Технологии хранения и управление выбором</span></a></li>
+          </ul>
+        </section>
+        <section class="sitemap-card">
+          <h2>Служебные ресурсы</h2>
+          <p>Технические файлы для поисковых систем и проверяющих систем.</p>
+          <ul>
+            <li><a href="/sitemap.xml">sitemap.xml<span>Карта сайта в формате XML</span></a></li>
+            <li><a href="/robots.txt">robots.txt<span>Правила обхода для роботов</span></a></li>
+          </ul>
+        </section>
+      </div>
+    </main>
+    <footer class="legal-footer">
+      <div class="container legal-footer__inner">
+        <p>© 2026 VideoVault · ВидеоВолт</p>
+        <div>
+          <a href="/">Главная</a>
+          <a href="/sitemap">Карта сайта</a>
+          <button type="button" onclick="(function(){try{localStorage.removeItem('videovault_cookie_consent');}catch(e){}location.href='/';})()">Настройки cookie</button>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

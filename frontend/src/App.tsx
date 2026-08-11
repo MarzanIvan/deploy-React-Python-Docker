@@ -13,7 +13,6 @@ import logoWhite from './logo-white.svg'
 import logoBlack from './logo-black.svg'
 import AdModal from './AdModal'
 import CookieConsent, { openCookieSettings } from './components/CookieConsent/CookieConsent'
-import LegalPage, { LegalDocumentType } from './components/Legal/LegalPage'
 
 interface Translations {
 	title: string
@@ -51,6 +50,8 @@ interface Translations {
 	termsOfService?: string
 	cookiePolicy?: string
 	cookieSettings?: string
+	consentDocument?: string
+	siteMap?: string
 	legalConsentText?: string
 	legalConsentJoin?: string
 	legalConsentRequired?: string
@@ -99,6 +100,8 @@ const translations: Record<string, Translations> = {
 		termsOfService: 'Terms of Service',
 		cookiePolicy: 'Cookie Policy',
 		cookieSettings: 'Cookie settings',
+		consentDocument: 'Personal data consent',
+		siteMap: 'Sitemap',
 		legalConsentText: 'I agree to the',
 		legalConsentJoin: 'and',
 		legalConsentRequired: 'Please accept the Privacy Policy and Terms of Service to continue.',
@@ -145,6 +148,8 @@ const translations: Record<string, Translations> = {
 		termsOfService: 'Пользовательское соглашение',
 		cookiePolicy: 'Использование cookie',
 		cookieSettings: 'Настройки cookie',
+		consentDocument: 'Согласие на обработку ПДн',
+		siteMap: 'Карта сайта',
 		legalConsentText: 'Я принимаю',
 		legalConsentJoin: 'и',
 		legalConsentRequired: 'Примите Политику конфиденциальности и Пользовательское соглашение, чтобы продолжить.',
@@ -191,6 +196,8 @@ const translations: Record<string, Translations> = {
 		termsOfService: '服务条款',
 		cookiePolicy: 'Cookie 使用说明',
 		cookieSettings: 'Cookie 设置',
+		consentDocument: '个人数据处理同意书',
+		siteMap: '网站地图',
 		legalConsentText: '我已阅读并同意',
 		legalConsentJoin: '和',
 		legalConsentRequired: '请先同意隐私政策和服务条款。',
@@ -261,11 +268,18 @@ const App = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
 	const [legalAccepted, setLegalAccepted] = useState<boolean>(false)
 
-	const [language, setLanguage] = useState<'en' | 'ru' | 'zh'>('en')
+	// Russian is the default language of the service; a previously chosen
+	// language is restored on the next visit.
+	const [language, setLanguage] = useState<'en' | 'ru' | 'zh'>('ru')
 
 	// Function to change the language
 	const handleLanguageChange = (selectedLanguage: 'en' | 'ru' | 'zh') => {
 		setLanguage(selectedLanguage)
+		try {
+			window.localStorage.setItem('videovault_language', selectedLanguage)
+		} catch {
+			// The choice still applies for the current session.
+		}
 	}
 	const t = translations[language]
 
@@ -276,8 +290,18 @@ const App = () => {
 				setIsDarkMode(true)
 				document.body.classList.add('dark-theme')
 			}
+
+			const savedLanguage = window.localStorage.getItem('videovault_language')
+			if (savedLanguage === 'en' || savedLanguage === 'ru' || savedLanguage === 'zh') {
+				setLanguage(savedLanguage)
+			}
 		}
 	}, [])
+
+	// Keep the document language in sync for assistive technology and crawlers.
+	useEffect(() => {
+		document.documentElement.lang = language
+	}, [language])
 
 	// Scroll reveal
 	useEffect(() => {
@@ -453,36 +477,18 @@ const App = () => {
 		toast.info('Download canceled.')
 	}
 
-	const normalizedPath = typeof window === 'undefined'
-		? '/'
-		: window.location.pathname.replace(/\/+$/, '') || '/'
-	const legalRoutes: Partial<Record<string, LegalDocumentType>> = {
-		'/privacy': 'privacy',
-		'/terms': 'terms',
-		'/cookies': 'cookies',
-	}
-	const legalDocumentType = legalRoutes[normalizedPath]
-
-	if (legalDocumentType) {
-		return (
-			<LegalPage
-				type={legalDocumentType}
-				isDarkMode={isDarkMode}
-				onToggleTheme={toggleTheme}
-				logo={isDarkMode ? logoBlack : logoWhite}
-			/>
-		)
-	}
-
 	return (
 		<div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
 			{/* ──────────── HEADER ──────────── */}
 			<header className='header'>
 				<div className='container header-content'>
-					<div className='header-left'>
-						<img src={isDarkMode ? logoBlack : logoWhite} width="36" height="36" alt="VideoVault" />
-						<span className='header-logo-text'>VideoVault</span>
-					</div>
+					<a className='header-left' href='/' aria-label='VideoVault — ВидеоВолт'>
+						<img src={isDarkMode ? logoBlack : logoWhite} width="36" height="36" alt="" />
+						<span className='header-logo-lockup'>
+							<span className='header-logo-text'>VideoVault</span>
+							<span className='header-logo-ru' aria-hidden='true'>ВидеоВолт</span>
+						</span>
+					</a>
 
 					<button
 						id='menu-button'
@@ -608,7 +614,8 @@ const App = () => {
 						/>
 						<label htmlFor='legal-consent'>
 							{t.legalConsentText}{' '}
-							<a href='/privacy' target='_blank' rel='noopener noreferrer'>{t.privacyPolicy}</a>{' '}
+							<a href='/privacy' target='_blank' rel='noopener noreferrer'>{t.privacyPolicy}</a>,{' '}
+							<a href='/consent' target='_blank' rel='noopener noreferrer'>{t.consentDocument}</a>{' '}
 							{t.legalConsentJoin}{' '}
 							<a href='/terms' target='_blank' rel='noopener noreferrer'>{t.termsOfService}</a>
 						</label>
@@ -844,8 +851,9 @@ const App = () => {
 					<div className='footer-main'>
 						<div className='footer-brand'>
 							<div className='footer-brand-logo'>
-								<img src={isDarkMode ? logoBlack : logoWhite} width="32" height="32" alt="VideoVault" />
+								<img src={isDarkMode ? logoBlack : logoWhite} width="32" height="32" alt="" />
 								<span>VideoVault</span>
+								<span className='footer-brand-ru'>ВидеоВолт</span>
 							</div>
 							<p>{t.footerTagline}</p>
 							<div className='footer-socials'>
@@ -887,8 +895,10 @@ const App = () => {
 							<h4>{t.footerLegal}</h4>
 							<ul>
 								<li><a href='/privacy'>{t.privacyPolicy}</a></li>
+								<li><a href='/consent'>{t.consentDocument}</a></li>
 								<li><a href='/terms'>{t.termsOfService}</a></li>
 								<li><a href='/cookies'>{t.cookiePolicy}</a></li>
+								<li><a href='/sitemap'>{t.siteMap}</a></li>
 								<li><button type='button' className='footer-link-button' onClick={openCookieSettings}>{t.cookieSettings}</button></li>
 							</ul>
 						</div>

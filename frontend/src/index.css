@@ -231,6 +231,18 @@ a:hover {
 }
 .header-left {
   gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+.header-left:hover {
+  color: inherit;
+}
+
+/* Bilingual wordmark: latin brand + its Russian twin side by side. */
+.header-logo-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .header-logo-text {
@@ -243,6 +255,31 @@ a:hover {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+.header-logo-ru {
+  padding-left: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-tertiary);
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
+  transition: color var(--transition);
+}
+
+.header-left:hover .header-logo-ru {
+  color: var(--text-secondary);
+}
+
+.footer-brand-ru {
+  padding-left: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-tertiary);
+  border-left: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 /* Nav */
@@ -1568,6 +1605,14 @@ body.dark-theme .footer-giant-text {
   .footer-main {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
+  }
+}
+
+/* The Russian twin of the wordmark needs horizontal room; drop it once the
+   header starts competing for space. */
+@media (max-width: 900px) {
+  .header-logo-ru {
+    display: none;
   }
 }
 
