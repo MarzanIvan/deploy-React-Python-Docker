@@ -142,16 +142,26 @@
   transform: translateY(-1px);
 }
 
+/* Same size and weight as "accept" so declining is equally easy to find. */
 .cookie-gate__button--secondary {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
 }
 
 .cookie-gate__button--secondary:hover {
   color: var(--accent);
   background: var(--accent-subtle);
   border-color: var(--border-accent);
+  transform: translateY(-1px);
+}
+
+.cookie-gate__hint {
+  margin: 12px 0 0;
+  font-size: 0.775rem;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--text-tertiary);
 }
 
 .cookie-gate__button:focus-visible,

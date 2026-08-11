@@ -19,6 +19,7 @@ const copy: Record<Language, {
 	cookiePolicy: string
 	accept: string
 	reject: string
+	rejectHint: string
 	label: string
 }> = {
 	ru: {
@@ -36,7 +37,8 @@ const copy: Record<Language, {
 		policy: 'Политика конфиденциальности',
 		cookiePolicy: 'Использование cookie',
 		accept: 'Принять все',
-		reject: 'Только обязательные',
+		reject: 'Отказаться',
+		rejectHint: 'При отказе остаются только обязательные технологии, без которых сайт не работает.',
 		label: 'Выбор режима использования файлов cookie',
 	},
 	en: {
@@ -54,7 +56,8 @@ const copy: Record<Language, {
 		policy: 'Privacy Policy',
 		cookiePolicy: 'Cookie Notice',
 		accept: 'Accept all',
-		reject: 'Essential only',
+		reject: 'Reject',
+		rejectHint: 'If you decline, only the essential technologies the site cannot run without are kept.',
 		label: 'Cookie preferences',
 	},
 	zh: {
@@ -72,7 +75,8 @@ const copy: Record<Language, {
 		policy: '隐私政策',
 		cookiePolicy: 'Cookie 说明',
 		accept: '全部接受',
-		reject: '仅必要',
+		reject: '拒绝',
+		rejectHint: '若您拒绝，仅保留网站运行所必需的技术。',
 		label: 'Cookie 设置',
 	},
 }
@@ -206,6 +210,8 @@ const CookieConsent = ({ language = 'ru' }: CookieConsentProps) => {
 					<a href='/cookies'>{content.cookiePolicy}</a>
 				</p>
 
+				{/* Accept and reject carry equal visual weight: a decline that is
+				    harder to find than consent is not freely given consent. */}
 				<div className='cookie-gate__actions'>
 					<button
 						type='button'
@@ -223,6 +229,8 @@ const CookieConsent = ({ language = 'ru' }: CookieConsentProps) => {
 						{content.accept}
 					</button>
 				</div>
+
+				<p className='cookie-gate__hint'>{content.rejectHint}</p>
 			</div>
 		</div>
 	)
