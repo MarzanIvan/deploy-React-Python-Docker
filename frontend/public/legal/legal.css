@@ -530,6 +530,70 @@ body.dark-theme .legal-theme-button .icon-light { display: none; }
   font-weight: 500;
 }
 
+/* ---------- Registry export page ---------- */
+.registry-wrap {
+  padding-top: 56px;
+  padding-bottom: 96px;
+}
+
+.registry-card {
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+  padding: 28px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.registry-card label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.registry-card input {
+  min-height: 48px;
+  padding: 12px 14px;
+  font: 500 1rem/1.4 var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.registry-card input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-subtle);
+}
+
+.registry-card .legal-download__button {
+  justify-content: center;
+  min-height: 48px;
+}
+
+.registry-card .legal-download__button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.registry-status {
+  min-height: 1.4em;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.registry-status--success { color: #10B981; }
+.registry-status--error { color: var(--error); }
+
+.registry-note {
+  font-size: 0.775rem;
+  color: var(--text-tertiary);
+}
+
 /* ---------- Footer ---------- */
 .legal-footer {
   background: var(--bg-secondary);

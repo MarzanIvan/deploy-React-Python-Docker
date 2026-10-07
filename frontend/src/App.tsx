@@ -13,6 +13,7 @@ import logoWhite from './logo-white.svg'
 import logoBlack from './logo-black.svg'
 import AdModal from './AdModal'
 import CookieConsent, { openCookieSettings } from './components/CookieConsent/CookieConsent'
+import { recordConsent } from './consentRegistry'
 
 interface Translations {
 	title: string
@@ -610,7 +611,10 @@ const App = () => {
 							id='legal-consent'
 							type='checkbox'
 							checked={legalAccepted}
-							onChange={event => setLegalAccepted(event.target.checked)}
+							onChange={event => {
+								setLegalAccepted(event.target.checked)
+								if (event.target.checked) recordConsent('legal_accepted', language)
+							}}
 						/>
 						<label htmlFor='legal-consent'>
 							{t.legalConsentText}{' '}

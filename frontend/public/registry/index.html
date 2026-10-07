@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Реестр согласий — VideoVault</title>
+    <meta name="description" content="Служебная выгрузка реестра согласий." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://videovault.ru/registry" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/legal/legal.css?v=3f664292" />
+  </head>
+  <body>
+    <script>(function(){try{if(localStorage.getItem('theme')==='dark'){document.body.classList.add('dark-theme');}}catch(e){}})();</script>
+    <a class="skip-link" href="#legal-content">Перейти к документу</a>
+    <header class="legal-header">
+      <div class="container legal-header__inner">
+        <a class="legal-brand" href="/" aria-label="VideoVault — на главную">
+          <img src="/favicon-32x32.png" width="32" height="32" alt="" />
+          <span>VideoVault</span>
+          <span class="legal-brand__ru">ВидеоВолт</span>
+        </a>
+        <div class="legal-header__actions">
+          <a class="legal-back-link" href="/">На главную</a>
+          <button class="legal-theme-button" type="button" aria-label="Переключить тему" onclick="(function(){var d=document.body.classList.toggle('dark-theme');try{localStorage.setItem('theme',d?'dark':'light');}catch(e){}})()">
+            <svg class="icon-light" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>
+            <svg class="icon-dark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="legal-content" class="legal-main">
+      <section class="legal-hero">
+        <div class="container legal-hero__inner">
+          <span class="legal-eyebrow">Служебный раздел</span>
+          <h1>Реестр согласий</h1>
+          <p>Выгрузка всех зафиксированных согласий пользователей в формате Excel. Доступ только по паролю оператора.</p>
+        </div>
+      </section>
+
+      <div class="container registry-wrap">
+        <form id="registry-form" class="registry-card" autocomplete="off">
+          <label for="registry-password">Пароль доступа</label>
+          <input id="registry-password" name="password" type="password" required autocomplete="current-password" spellcheck="false" />
+          <button id="registry-submit" type="submit" class="legal-download__button legal-download__button--primary">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+            Скачать реестр (.xlsx)
+          </button>
+          <p id="registry-status" class="registry-status" role="status" aria-live="polite"></p>
+          <p class="registry-note">Файл содержит персональные данные (IP-адреса). Храните его в соответствии с Политикой конфиденциальности и не передавайте третьим лицам.</p>
+        </form>
+      </div>
+    </main>
+    <script>
+(function () {
+  var form = document.getElementById('registry-form');
+  var button = document.getElementById('registry-submit');
+  var status = document.getElementById('registry-status');
+
+  function show(message, kind) {
+    status.textContent = message;
+    status.className = 'registry-status' + (kind ? ' registry-status--' + kind : '');
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    button.disabled = true;
+    show('Формируем файл…');
+
+    fetch('/api/registry/export', { method: 'POST', body: new FormData(form), credentials: 'same-origin' })
+      .then(function (response) {
+        if (response.status === 401) throw new Error('Неверный пароль.');
+        if (response.status === 429) {
+          var minutes = Math.ceil((parseInt(response.headers.get('Retry-After'), 10) || 900) / 60);
+          throw new Error('Слишком много попыток. Повторите через ' + minutes + ' мин.');
+        }
+        if (!response.ok) throw new Error('Реестр временно недоступен. Попробуйте позже.');
+
+        var disposition = response.headers.get('Content-Disposition') || '';
+        var match = disposition.match(/filename="([^"]+)"/);
+        var count = response.headers.get('X-Registry-Count');
+        return response.blob().then(function (blob) {
+          return { blob: blob, name: match ? match[1] : 'videovault-registry.xlsx', count: count };
+        });
+      })
+      .then(function (file) {
+        var url = URL.createObjectURL(file.blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        form.reset();
+        show('Файл загружен' + (file.count !== null ? ': записей — ' + file.count : '') + '.', 'success');
+      })
+      .catch(function (error) {
+        show(error.message, 'error');
+      })
+      .then(function () {
+        button.disabled = false;
+      });
+  });
+})();</script>
+    <footer class="legal-footer">
+      <div class="container legal-footer__inner">
+        <p>© 2026 VideoVault · ВидеоВолт</p>
+        <div>
+          <a href="/">Главная</a>
+          <a href="/sitemap">Карта сайта</a>
+          <button type="button" onclick="(function(){try{localStorage.removeItem('videovault_cookie_consent');}catch(e){}location.href='/';})()">Настройки cookie</button>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

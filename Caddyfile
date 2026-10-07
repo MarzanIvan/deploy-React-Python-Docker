@@ -1,0 +1,47 @@
+# Публичный веб-сервер VideoVault.
+#
+# Caddy сам выпускает и автоматически продлевает сертификаты Let's Encrypt
+# (за ~30 дней до истечения), поэтому certbot и ручное обновление не нужны.
+# Сертификаты и ключ ACME-аккаунта хранятся в томе caddy_data — его нельзя
+# удалять, иначе Caddy будет выпускать сертификаты заново.
+#
+# SITE_ADDRESS переопределяется только для локальной проверки (например, ":80").
+
+{$SITE_ADDRESS:videovault.ru, www.videovault.ru} {
+	encode zstd gzip
+
+	# Аналог client_max_body_size 10m из прежней конфигурации nginx.
+	request_body {
+		max_size 10MB
+	}
+
+	header {
+		-Server
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# /api/* -> backend без префикса /api (как proxy_pass http://backend:8000/ в nginx).
+	handle_path /api/* {
+		reverse_proxy backend:8000
+	}
+
+	# Готовые файлы и WebSocket очереди проксируются с сохранением пути.
+	# WebSocket Caddy поддерживает автоматически, таймаута на чтение по умолчанию нет,
+	# поэтому длительные загрузки не обрываются.
+	@backend path /download/* /queuesocket/* /queuesock/*
+	handle @backend {
+		reverse_proxy backend:8000
+	}
+
+	# Служебная страница выгрузки реестра не должна индексироваться.
+	@registry path /registry /registry/*
+	header @registry {
+		X-Robots-Tag "noindex, nofollow"
+		Cache-Control "no-store"
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

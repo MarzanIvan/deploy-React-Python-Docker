@@ -270,14 +270,14 @@ const downloadBlock = (doc) => `<section class="legal-download" aria-labelledby=
             </div>
           </section>`;
 
-const layout = ({ route, title, description, body }) => `<!doctype html>
+const layout = ({ route, title, description, body, robots = 'index, follow' }) => `<!doctype html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(title)} — VideoVault</title>
     <meta name="description" content="${escapeHtml(description)}" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="${robots}" />
     <link rel="canonical" href="${ORIGIN}/${route}" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -481,6 +481,111 @@ const writeFile = (relativePath, contents) => {
   return relativePath;
 };
 
+/**
+ * Служебная страница выгрузки реестра согласий. Пароль проверяет только
+ * backend (/api/registry/export); страница лишь отправляет его и сохраняет
+ * полученный Excel-файл. Не индексируется и не входит в карту сайта.
+ */
+const renderRegistryPage = () => {
+  const script = `
+(function () {
+  var form = document.getElementById('registry-form');
+  var button = document.getElementById('registry-submit');
+  var status = document.getElementById('registry-status');
+
+  function show(message, kind) {
+    status.textContent = message;
+    status.className = 'registry-status' + (kind ? ' registry-status--' + kind : '');
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    button.disabled = true;
+    show('Формируем файл…');
+
+    fetch('/api/registry/export', { method: 'POST', body: new FormData(form), credentials: 'same-origin' })
+      .then(function (response) {
+        if (response.status === 401) throw new Error('Неверный пароль.');
+        if (response.status === 429) {
+          var minutes = Math.ceil((parseInt(response.headers.get('Retry-After'), 10) || 900) / 60);
+          throw new Error('Слишком много попыток. Повторите через ' + minutes + ' мин.');
+        }
+        if (!response.ok) throw new Error('Реестр временно недоступен. Попробуйте позже.');
+
+        var disposition = response.headers.get('Content-Disposition') || '';
+        var match = disposition.match(/filename="([^"]+)"/);
+        var count = response.headers.get('X-Registry-Count');
+        return response.blob().then(function (blob) {
+          return { blob: blob, name: match ? match[1] : 'videovault-registry.xlsx', count: count };
+        });
+      })
+      .then(function (file) {
+        var url = URL.createObjectURL(file.blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        form.reset();
+        show('Файл загружен' + (file.count !== null ? ': записей — ' + file.count : '') + '.', 'success');
+      })
+      .catch(function (error) {
+        show(error.message, 'error');
+      })
+      .then(function () {
+        button.disabled = false;
+      });
+  });
+})();`;
+
+  const body = `    <main id="legal-content" class="legal-main">
+      <section class="legal-hero">
+        <div class="container legal-hero__inner">
+          <span class="legal-eyebrow">Служебный раздел</span>
+          <h1>Реестр согласий</h1>
+          <p>Выгрузка всех зафиксированных согласий пользователей в формате Excel. Доступ только по паролю оператора.</p>
+        </div>
+      </section>
+
+      <div class="container registry-wrap">
+        <form id="registry-form" class="registry-card" autocomplete="off">
+          <label for="registry-password">Пароль доступа</label>
+          <input id="registry-password" name="password" type="password" required autocomplete="current-password" spellcheck="false" />
+          <button id="registry-submit" type="submit" class="legal-download__button legal-download__button--primary">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+            Скачать реестр (.xlsx)
+          </button>
+          <p id="registry-status" class="registry-status" role="status" aria-live="polite"></p>
+          <p class="registry-note">Файл содержит персональные данные (IP-адреса). Храните его в соответствии с Политикой конфиденциальности и не передавайте третьим лицам.</p>
+        </form>
+      </div>
+    </main>
+    <script>${script}</script>`;
+
+  return layout({
+    route: 'registry',
+    title: 'Реестр согласий',
+    description: 'Служебная выгрузка реестра согласий.',
+    body,
+    robots: 'noindex, nofollow',
+  });
+};
+
+/** Редакции документов — передаются вместе с каждым согласием в реестр. */
+const writeLegalVersions = () => {
+  const versions = {};
+  DOCUMENTS.forEach((doc) => {
+    const markdown = fs.readFileSync(path.join(LEGAL_DIR, doc.source), 'utf8');
+    versions[doc.route] = parseDocument(markdown, doc.fallbackTitle).revision.replace(/^Редакция от\s*/, '');
+  });
+  const target = path.join(__dirname, '..', 'src', 'generated', 'legalVersions.json');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(versions, null, 2)}\n`, 'utf8');
+  return 'src/generated/legalVersions.json';
+};
+
 const main = () => {
   const written = [];
   const lastmod = new Date().toISOString().slice(0, 10);
@@ -492,8 +597,10 @@ const main = () => {
 
   written.push(writeFile(path.join('sitemap', 'index.html'), renderSitemapPage()));
   written.push(writeFile('sitemap.xml', renderSitemapXml(lastmod)));
+  written.push(writeFile(path.join('registry', 'index.html'), renderRegistryPage()));
 
   written.forEach((file) => console.log(`  legal: generated public/${file}`));
+  console.log(`  legal: generated ${writeLegalVersions()}`);
 };
 
 main();

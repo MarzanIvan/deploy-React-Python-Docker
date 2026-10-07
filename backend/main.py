@@ -14,6 +14,8 @@ import os
 
 # Импортируем компонент счётчика
 from counter import counter_app
+# Реестр согласий пользователей (152-ФЗ): запись в PostgreSQL и выгрузка в Excel
+from registry import registry_router, registry_startup, registry_shutdown
 
 # Настройка логирования
 logging.basicConfig(level=logging.WARNING)
@@ -38,6 +40,7 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 # Создаём FastAPI приложение
 app = FastAPI()
 app.mount("/counter", counter_app)
+app.include_router(registry_router)
 
 # Настройка CORS
 app.add_middleware(
@@ -611,6 +614,7 @@ async def startup_event():
     logger.info("Starting download queue processor...")
     if not download_queue.worker_task:
         download_queue.worker_task = asyncio.create_task(download_queue.process_queue())
+    await registry_startup()
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -618,6 +622,7 @@ async def shutdown_event():
     logger.info("Shutting down download queue processor...")
     if download_queue.worker_task:
         download_queue.worker_task.cancel()
+    await registry_shutdown()
 
 # Запуск приложения (для отладки)
 if __name__ == "__main__":

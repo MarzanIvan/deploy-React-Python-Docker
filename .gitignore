@@ -12,3 +12,6 @@ venv/
 backend/venv/
 __pycache__/
 *.pyc
+
+# Secrets (server-only)
+.env

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './CookieConsent.css'
+import { recordConsent } from '../../consentRegistry'
 
 type Language = 'en' | 'ru' | 'zh'
 type CookieChoice = 'accepted' | 'rejected'
@@ -163,6 +164,7 @@ const CookieConsent = ({ language = 'ru' }: CookieConsentProps) => {
 		}
 		setIsVisible(false)
 		window.dispatchEvent(new CustomEvent('videovault:cookie-consent', { detail: choice }))
+		recordConsent(choice === 'accepted' ? 'cookies_accepted' : 'cookies_rejected', language)
 	}
 
 	if (!isVisible) return null
