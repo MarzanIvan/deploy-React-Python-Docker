@@ -14,6 +14,8 @@ import logoBlack from './logo-black.svg'
 import AdModal from './AdModal'
 import CookieConsent, { openCookieSettings } from './components/CookieConsent/CookieConsent'
 import { recordConsent } from './consentRegistry'
+import MediaCard, { MediaInfo } from './components/MediaCard/MediaCard'
+import { detectUrl, KIND_LABEL, PLATFORM_LABEL, PLATFORM_TEXT } from './platforms'
 
 interface Translations {
 	title: string
@@ -67,7 +69,7 @@ interface Translations {
 const translations: Record<string, Translations> = {
 	en: {
 		title: 'Download any video',
-		heroSubtitle: 'Paste a link, pick the format, and save the file to your device. Fast, private, and reliable.',
+		heroSubtitle: 'Paste a YouTube or Instagram link (video, Reel, post), pick the quality, and save the file to your device. Fast, private, and reliable.',
 		enterUrl: 'Paste video URL here...',
 		fetchVideoInfo: 'Get video info',
 		selectVideoFormat: 'Select format:',
@@ -115,7 +117,7 @@ const translations: Record<string, Translations> = {
 	},
 	ru: {
 		title: 'Скачивайте любое видео',
-		heroSubtitle: 'Вставьте ссылку, выберите формат и сохраните файл на устройство. Быстро, приватно и надёжно.',
+		heroSubtitle: 'Вставьте ссылку на YouTube или Instagram (видео, рилс, пост), выберите качество и сохраните файл на устройство. Быстро, приватно и надёжно.',
 		enterUrl: 'Вставьте ссылку на видео...',
 		fetchVideoInfo: 'Получить информацию',
 		selectVideoFormat: 'Выберите формат:',
@@ -163,7 +165,7 @@ const translations: Record<string, Translations> = {
 	},
 	zh: {
 		title: '下载任意视频',
-		heroSubtitle: '粘贴链接，选择格式，将文件保存到设备。快速、私密、可靠。',
+		heroSubtitle: '粘贴 YouTube 或 Instagram 链接（视频、Reels、帖子），选择画质并保存到设备。快速、私密、可靠。',
 		enterUrl: '在此粘贴视频链接...',
 		fetchVideoInfo: '获取视频信息',
 		selectVideoFormat: '选择格式：',
@@ -220,10 +222,7 @@ interface VideoFormat {
 	type: string
 }
 
-interface VideoInfo {
-	title: string
-	formats: VideoFormat[]
-}
+type VideoInfo = MediaInfo
 
 /* ---- Inline SVG Icons (ultralight monochrome, strokeWidth 1.5) ---- */
 const SunIcon = () => (
@@ -260,6 +259,7 @@ const App = () => {
 	const [url, setUrl] = useState<string>('')
 	const [videoFormatId, setVideoFormatId] = useState<string>('')
 	const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
+	const detected = detectUrl(url)
 	const [progress, setProgress] = useState<number>(0)
 	const [message, setMessage] = useState<string>('')
 	const [loading, setLoading] = useState<boolean>(false)
@@ -360,14 +360,18 @@ const App = () => {
 			setVideoInfo(data)
 			toast.success('Successfully fetched video info.')
 		} catch (error) {
-			toast.error('Error fetching video info.')
+			const detail = axios.isAxiosError(error) ? error.response?.data?.detail : null
+			toast.error(typeof detail === 'string' ? detail : 'Error fetching video info.')
 		} finally {
 			setIsInfoPending(false)
 		}
 	}
 
-	const handleDownload = async () => {
-		if (!videoFormatId) {
+	const handleDownload = async (
+		formatId: string = videoFormatId,
+		audioOnly: boolean = downloadAudio
+	) => {
+		if (!formatId) {
 			toast.error('Please select a video format.')
 			return
 		}
@@ -384,8 +388,8 @@ const App = () => {
 				'/api/download_video/',
 				new URLSearchParams({
 					url,
-					video_format_id: videoFormatId,
-					download_audio: downloadAudio.toString(),
+					video_format_id: formatId,
+					download_audio: audioOnly.toString(),
 				})
 			)
 	
@@ -574,6 +578,25 @@ const App = () => {
 						onChange={e => setUrl(e.target.value)}
 					/>
 
+					<div className='platform-hint' aria-live='polite'>
+						{detected && detected.platform !== 'other' ? (
+							<span className={`platform-chip platform-${detected.platform}`}>
+								<span className='platform-dot' />
+								{PLATFORM_LABEL[detected.platform]}
+								{detected.kind ? ` · ${KIND_LABEL[language][detected.kind]}` : ''}
+							</span>
+						) : detected ? (
+							<span className='platform-note'>{PLATFORM_TEXT[language].unknown}</span>
+						) : (
+							<span className='platform-note'>
+								{PLATFORM_TEXT[language].supported}: YouTube · Instagram
+							</span>
+						)}
+						{detected?.kind === 'stories' && (
+							<span className='platform-note'>{PLATFORM_TEXT[language].storiesUnsupported}</span>
+						)}
+					</div>
+
 					<SpecularButton
 						size="lg"
 						radius={10}
@@ -625,7 +648,16 @@ const App = () => {
 						</label>
 					</div>
 
-					{videoInfo && (
+					{videoInfo && videoInfo.platform === 'instagram' && (
+						<MediaCard
+							info={videoInfo}
+							language={language}
+							busy={loading}
+							onDownloadFormat={(formatId, audioOnly) => handleDownload(formatId, audioOnly)}
+						/>
+					)}
+
+					{videoInfo && videoInfo.platform !== 'instagram' && (
 						<div style={{ marginTop: '20px' }}>
 							<div className='video-title'>{videoInfo.title}</div>
 							<p className='subtitle'>{t.selectVideoFormat}</p>
@@ -653,7 +685,7 @@ const App = () => {
 
 							<button
 								className='primary-button'
-								onClick={handleDownload}
+								onClick={() => handleDownload()}
 								disabled={loading}
 							>
 								{loading ? t.downloading : t.download}

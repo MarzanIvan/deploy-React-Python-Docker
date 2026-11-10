@@ -16,6 +16,10 @@ import os
 from counter import counter_app
 # Реестр согласий пользователей (152-ФЗ): запись в PostgreSQL и выгрузка в Excel
 from registry import registry_router, registry_startup, registry_shutdown
+# Платформы (YouTube, Instagram), метаданные постов, прокси медиа
+from media import (
+    detect_platform, normalize_info, instagram_embed_fallback, media_router,
+)
 
 # Настройка логирования
 logging.basicConfig(level=logging.WARNING)
@@ -26,6 +30,9 @@ FFMPEG_PATH = r"/usr/bin/ffmpeg"
 # Добавляем deno и ffmpeg в PATH (deno нужен для PO Token генерации в yt-dlp)
 DENO_BIN = "/root/.deno/bin"
 os.environ["PATH"] = DENO_BIN + os.pathsep + os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ.get("PATH", "")
+# Секреты берутся только из окружения (.env на сервере), в коде их быть не должно.
+PROXY_URL = os.environ.get("PROXY_URL", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 COOKIE_TXT_PATH = "/cookies.txt"  # Абсолютный путь в контейнере
 
 # Проверка наличия FFmpeg
@@ -41,6 +48,7 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 app = FastAPI()
 app.mount("/counter", counter_app)
 app.include_router(registry_router)
+app.include_router(media_router)
 
 # Настройка CORS
 app.add_middleware(
@@ -53,6 +61,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def base_ydl_opts(url: str) -> dict:
+    """Общие опции yt-dlp: прокси и (для Instagram) cookies авторизации."""
+    opts = {}
+    if PROXY_URL:
+        opts["proxy"] = PROXY_URL
+    if (
+        detect_platform(url) == "instagram"
+        and os.path.isfile(COOKIE_TXT_PATH)
+        and os.path.getsize(COOKIE_TXT_PATH) > 0
+    ):
+        opts["cookiefile"] = COOKIE_TXT_PATH
+    return opts
+
 
 # ========== КЛАСС МЕНЕДЖЕРА ОЧЕРЕДИ ==========
 
@@ -287,7 +309,7 @@ class DownloadQueue:
 
         def run_download():
             video_opts = {
-                "format": f"{video_format_id}+bestaudio/best",
+                "format": f"{video_format_id}+bestaudio/{video_format_id}/best",
                 "outtmpl": os.path.join(DOWNLOAD_DIR, "%(title).200s_%(id)s_%(format_id)s.%(ext)s"),
                 "ffmpeg_location": FFMPEG_PATH,
                 "quiet": True,
@@ -295,7 +317,7 @@ class DownloadQueue:
                 "noprogress": False,
                 "sleep_interval": 1,
                 "progress_hooks": [progress_hook],
-                "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
+                **base_ydl_opts(url),
             }
 
             if download_audio:
@@ -386,36 +408,24 @@ async def finish_task_by_id(self, task_id: str):
 DownloadQueue.finish_task_by_id = finish_task_by_id
 
 def get_video_info(url: str):
+    """Метаданные видео/поста: платформа, описание, обложка, теги, форматы, материалы."""
+    platform = detect_platform(url)
     try:
         ydl_opts = {
             "quiet": True,
             "no_warnings": True,
             "nocheckcertificate": True,
             "sleep_interval": 1,
-            "proxy": "socks5://6D1FM1:UXbqwK@141.98.171.40:8000"
+            **base_ydl_opts(url),
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            
-            # Фильтруем только форматы, у которых есть URL
-            formats = []
-            for f in info["formats"]:
-                if f.get("url"):
-                    format_info = {
-                        "format_id": f["format_id"],
-                        "quality": f.get("format_note", "N/A"),
-                        "ext": f["ext"],
-                        "resolution": f.get("height", "N/A"),
-                        "vcodec": f.get("vcodec", "none"),
-                        "type": "Audio" if f.get("vcodec", "none") == "none" else "Video"
-                    }
-                    # Добавляем только уникальные форматы (по resolution и type)
-                    if format_info not in formats:
-                        formats.append(format_info)
-            
-            return {"title": info.get("title", "N/A"), "formats": formats}
+        return normalize_info(info, url)
     except Exception as e:
         logger.error(f"Error fetching video info: {e}")
+        # Instagram: yt-dlp не разбирает часть фото-постов — пробуем запасной способ
+        if platform == "instagram":
+            return instagram_embed_fallback(url)
         return None
 
 def delete_file(path: str):
@@ -428,16 +438,17 @@ def delete_file(path: str):
 # ========== API ЭНДПОИНТЫ ==========
 
 import hashlib
-
-ADMIN_PASSWORD = "3d9f62faf31f89353d6309120db6b376"
+import hmac
 
 @app.post("/update_cookies/")
 async def update_cookies(
     file: UploadFile = File(...),
     password: str = Form(...)
 ):
-    md5 = hashlib.md5(password.encode()).hexdigest()
-    if md5 != ADMIN_PASSWORD:
+    if not ADMIN_PASSWORD or not hmac.compare_digest(
+        hashlib.sha256(password.encode("utf-8")).digest(),
+        hashlib.sha256(ADMIN_PASSWORD.encode("utf-8")).digest(),
+    ):
         raise HTTPException(status_code=403, detail="Invalid password")
 
     try:
@@ -472,6 +483,11 @@ async def video_info(url: str = Form(...)):
             except Exception as e:
                 print(f"Ошибка при удалении {file_path}: {e}")
         return video_info
+    if detect_platform(url) == "instagram":
+        raise HTTPException(
+            status_code=400,
+            detail="Не удалось получить пост Instagram. Он может быть приватным или недоступным.",
+        )
     raise HTTPException(status_code=400, detail="Не удалось получить информацию о видео")
 
 @app.websocket("/queuesocket/{task_id}")
@@ -559,10 +575,12 @@ from fastapi import BackgroundTasks
 
 @app.get("/download/{filename:path}")
 async def download_file(filename: str = Path(...)):
-    file_path = os.path.join(DOWNLOAD_DIR, filename)
+    base = os.path.realpath(DOWNLOAD_DIR)
+    file_path = os.path.realpath(os.path.join(base, filename))
 
-    if not os.path.isfile(file_path):
-        raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+    # Защита от выхода за пределы папки загрузок (../)
+    if os.path.commonpath([base, file_path]) != base or not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
 
     task_id = download_queue.get_task_id_by_filename(filename)
     

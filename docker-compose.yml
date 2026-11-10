@@ -70,6 +70,8 @@ services:
     environment:
       DATABASE_URL: postgresql://videovault:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}@db:5432/videovault
       REGISTRY_PASSWORD: ${REGISTRY_PASSWORD:?REGISTRY_PASSWORD must be set in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in .env}
+      PROXY_URL: ${PROXY_URL:-}
     # Мягкая зависимость: реестр подключается к БД лениво, поэтому скачивание
     # видео продолжает работать, даже если база временно недоступна.
     depends_on:
