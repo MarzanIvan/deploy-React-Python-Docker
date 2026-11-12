@@ -5,6 +5,17 @@
 
 Команды выполняются по порядку. Блоки «на Mac» — в терминале ноутбука, остальные — на сервере под `root`.
 
+## Быстрый путь: один скрипт
+
+Шаги 2, 4–11 и 13–14 ниже автоматизированы в [`deploy/setup.sh`](deploy/setup.sh) (повторный запуск безопасен):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MarzanIvan/deploy-React-Python-Docker/feat/instagram-support/deploy/setup.sh -o /root/setup.sh
+bash /root/setup.sh
+```
+
+Вручную остаются: смена пароля root и отключение входа по паролю (шаг 3), DNS (шаг 7), загрузка `cookies.txt` и `PROXY_URL`.
+
 ---
 
 ## 0. Срочно: утечка секретов
