@@ -1722,3 +1722,28 @@ body.dark-theme .footer-giant-text {
     filter: blur(50px);
   }
 }
+
+/* Platform detection */
+.platform-hint {
+  min-height: 28px;
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  text-align: left;
+}
+.platform-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid var(--border-accent);
+  border-radius: 999px;
+}
+.platform-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.platform-note { font-size: 0.8125rem; color: var(--text-tertiary); }

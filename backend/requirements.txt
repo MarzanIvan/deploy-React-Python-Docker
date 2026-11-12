@@ -15,3 +15,4 @@ yt-dlp
 pysocks
 asyncpg==0.30.0
 openpyxl==3.1.5
+requests==2.32.3
